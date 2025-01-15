@@ -1,0 +1,26 @@
+Package: RedcapLite
+Type: Package
+Title: A Lightweight R & REDCap Interface for Data Management
+Version: 0.1.0
+Author: Waiguru Muriuki <waigurusamuel@uidaho.edu>
+Maintainer: Waiguru Muriuki <waigurusamuel@gmail.com>
+Description: 
+    RedcapLite provides a lightweight interface for interacting with 
+    REDCap (Research Electronic Data Capture) via its API. 
+    The package allows users to fetch raw data or preprocess it by 
+    adding value labels, handling checkbox fields, and assigning 
+    column attributes. Designed for flexibility and efficiency, 
+    RedcapLite supports data retrieval for both longitudinal and 
+    non-longitudinal projects. The package also facilitates saving 
+    processed data in reusable formats.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Depends: R (>= 4.0.0)
+Imports:
+    httr,
+    jsonlite,
+    dplyr,
+    tidyr,
+    purrr
+RoxygenNote: 7.3.2
