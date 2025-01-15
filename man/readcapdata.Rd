@@ -12,7 +12,8 @@ readcapdata(
   forms = NULL,
   drop_empty = FALSE,
   preprocess_data = FALSE,
-  list_event_form = FALSE
+  list_event_form = FALSE,
+  file_name = NULL
 )
 }
 \arguments{

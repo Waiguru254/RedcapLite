@@ -70,7 +70,7 @@
 #' REDCap (Research Electronic Data Capture)
 #' @export
 
-readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, drop_empty = FALSE, preprocess_data = FALSE, list_event_form = FALSE) {
+readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, drop_empty = FALSE, preprocess_data = FALSE, list_event_form = FALSE, file_name = NULL) {
 
     # Displaying the Event and Form names for the project
     if (isTRUE(list_event_form)) {
@@ -102,9 +102,16 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
     ### Just want to download the data in raw format=
     if (isTRUE(preprocess_data)) {
 
-      ### Flattening  the data
-      data <- jsonlite::fromJSON(httr::content(httr::POST(url, body = formData, encode = "form"),'text'))
-
+      #### Check whether you need to drop empty columns
+      if (isTRUE(drop_empty)) {
+        data <- jsonlite::fromJSON(httr::content(httr::POST(url, body = formData, encode = "form"),'text')) |>
+          ### Make all empty entries to be NA for consistency.
+          ### Make is easy in data management to use is.na() without having to ==""
+          dplyr::mutate(across(everything(), ~ ifelse(. == "", NA, .)))  |>
+          dplyr::select(dplyr::starts_with('record_id'), dplyr::starts_with('redcap_'), dplyr::everything())
+      } else {
+        data <- jsonlite::fromJSON(httr::content(httr::POST(url, body = formData, encode = "form"),'text'))
+      }
       ### Download Project Dictionary
       project_codebook <- project_dictionary(token = token ,url = url)
       ### Single select columns
@@ -263,14 +270,7 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
         dplyr::mutate(across(everything(), ~ ifelse(. == "", NA, .)))
     }
 
-    #### Check whether you need to drop empty columns
-    if (drop_empty) {
-      data <- data |>
-        ### Make all empty entries to be NA for consistency.
-        ### Make is easy in data management to use is.na() without having to ==""
-        dplyr::mutate(across(everything(), ~ ifelse(. == "", NA, .)))  |>
-        dplyr::select(dplyr::starts_with('record_id'), dplyr::starts_with('redcap_'), dplyr::everything())
-    }
+
 
     if(!is.null(file_name)) {
       saveRDS(data, file = file_name)
@@ -278,4 +278,5 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
     ### Exporting the data, what the function is returning
     return(data)
 }
-
+# facility_data <- readcapdata(token = '586375E8846606BE2D7E8316D8A23181', url = "https://redcap.vetmed.wsu.edu/api/",
+#                              drop_empty = TRUE, preprocess_data = TRUE)
