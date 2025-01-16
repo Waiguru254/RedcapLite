@@ -11,6 +11,11 @@ RedcapLite is a streamlined interface designed for interacting with REDCap (Rese
 
 Built with adaptability and performance in mind, this package caters to the needs of those managing complex datasets or requiring robust tools for optimizing REDCap-related processes. RedcapLite simplifies and enhances the user experience, making it an ideal choice for improving data management efficiency.
 
+When setting preprocess_data = TRUE, the function automatically enriches your dataset by adding variable and value labels derived from the REDCap data dictionary. This feature seamlessly integrates metadata, ensuring that columns are accurately labeled for improved clarity and analysis. Additionally, any updates made to the codebook on the REDCap server are instantly implemented, keeping your dataset aligned with the latest project definitions. This dynamic approach eliminates manual effort, enhances data interpretability, and ensures consistency with the most up-to-date project metadata.
+
+Checkbox fields in REDCap often pose challenges for data processing in other packages, as they generate multiple binary columns for each option without clear labels, making the data difficult to interpret and analyze. Our implementation addresses this by creating a compact, well-organized column that consolidates multiple-choice responses into a single, human-readable field while simultaneously generating one-hot encoded columns for detailed analysis. Each column is properly labeled, ensuring clarity and alignment with the REDCap data dictionary. This dual approach simplifies downstream processing, making it easier to handle checkbox data efficiently and accurately without losing important metadata.
+
+
 **Key Features:**
 
 - **Data Retrieval:** Fetch raw data directly from REDCap.
