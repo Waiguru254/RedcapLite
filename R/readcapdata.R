@@ -278,5 +278,3 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
     ### Exporting the data, what the function is returning
     return(data)
 }
-# facility_data <- readcapdata(token = '586375E8846606BE2D7E8316D8A23181', url = "https://redcap.vetmed.wsu.edu/api/",
-#                              drop_empty = TRUE, preprocess_data = TRUE)
