@@ -2,53 +2,82 @@
 output: github_document
 ---
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%"
-)
-```
-
 # RedcapLite
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of RedcapLite is to ...
+`RedcapLite` is an R package that provides a lightweight interface for managing and processing REDCap data. This package aims to simplify data management workflows for REDCap projects, offering essential tools for data manipulation and validation. ['REDCap'](https://projectredcap.org) (Research Electronic Data CAPture) is a secure web application for building and managing online surveys and databases, developed at Vanderbilt University.
+
+## Features
+
+- Streamlined data export from REDCap via API
+- Basic data preprocessing and cleaning functions
+- Simple validation checks for data quality
+- Lightweight alternative to full-scale REDCap management packages
 
 ## Installation
 
-You can install the development version of RedcapLite like so:
+You can install the development version of RedcapLite from GitHub:
 
-``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+```r
+# install.packages("remotes")
+remotes::install_github("username/RedcapLite")
 ```
 
-## Example
+## Usage
 
-This is a basic example which shows you how to solve a common problem:
+Here's a basic example of how to use RedcapLite:
 
-```{r example}
+```r
 library(RedcapLite)
-## basic example code
+
+# Connect to your REDCap project
+project <- redcap_connect(url = "your_redcap_url",
+                         token = "your_api_token")
+
+# Export data
+data <- redcap_export(project)
+
+# Basic data validation
+validation_report <- validate_data(data)
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
+## Documentation
 
-```{r cars}
-summary(cars)
+For more detailed information about package functions and usage examples, please refer to our package documentation:
+
+```r
+?RedcapLite
+browseVignettes("RedcapLite")
 ```
 
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this.
+## Getting Help
 
-You can also embed plots, for example:
+If you encounter any bugs or have feature requests, please file an issue on [GitHub](https://github.com/username/RedcapLite/issues).
 
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
+## Contributing
 
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
+Contributions to RedcapLite are welcome! Please refer to our contributing guidelines for more information.
+
+## About
+
+### Package Information
+- Package: RedcapLite
+- License: [Your chosen license]
+- Encoding: UTF-8
+- Depends: R (>= 4.0.0)
+
+### Authors
+[Your Name/Team]
+
+## License
+
+This project is licensed under [Your chosen license] - see the LICENSE file for details.
+
+## Acknowledgments
+
+- REDCap (Research Electronic Data Capture)
+- The R community
+
+Note: Replace placeholders (like [Your Name/Team], username/RedcapLite, etc.) with actual information specific to your package.
