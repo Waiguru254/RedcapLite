@@ -1,28 +1,15 @@
----
-output: github_document
----
-
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%"
-)
-```
 
 # RedcapLite
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-##RedcapLite: A Lightweight Interface for REDCap
+**RedcapLite: A Lightweight Interface for REDCap**
 
 Overview: RedcapLite provides a streamlined interface for interacting with REDCap (Research Electronic Data Capture) via its API. Designed for flexibility and efficiency, this package is ideal for researchers and data managers who need efficient tools for handling REDCap data exports or connecting to the REDCap API for streamlined workflows.
 
-Key Features:
+**Key Features:**
 
 - **Data Retrieval:** Fetch raw data directly from REDCap.
 
@@ -40,7 +27,7 @@ You can install the release version of RedcapLite from CRAN:
 # install.packages("pak")
 pak::pak("Waiguru254/RedcapLite")
 ```
-### Install by `remotes` package
+**Install by `remotes` package**
 The development version can be installed from GitHub after installing the remotes package:
 This is a basic example which shows you how to solve a common problem:
 
@@ -52,7 +39,7 @@ library(RedcapLite)
 
 ```
 
-## Features
+**Features**
 
 - **Easy connection to REDCap projects via the API.**
 
@@ -68,7 +55,7 @@ library(RedcapLite)
 - **Lightweight and intuitive interface**:
   - Simplifies common REDCap workflows.
   
- ##Example
+ **Example**
 
 This is a basic example showing how to connect to a REDCap project and retrieve data:
 ```r
@@ -82,21 +69,21 @@ head(data)
 ```
 You'll need to provide your own REDCap API URL and token.
 
-##Getting Help
+**Getting Help**
 
 If you encounter any issues or have questions about the package, please file an issue on GitHub with a minimal reproducible example.
 
-##About
+**About**
 
 Package: RedcapLite
 
-Authors: [Your Name], [Collaborator Names if any]
+Authors: Waiguru Muriuki, 
 
-Maintainer: [Your Name] (your-email@example.com)
+Maintainer: Waiguru (waigurusamuel@gmail.com)
 
-License: MIT + file LICENSE
+License: GPL-3
 
-Depends: R (>= 3.6.0)
+Depends: R (>= 4.0.0)
 
 For more details about REDCap, visit REDCap.
 
