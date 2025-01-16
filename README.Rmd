@@ -2,82 +2,101 @@
 output: github_document
 ---
 
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
 # RedcapLite
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-`RedcapLite` is an R package that provides a lightweight interface for managing and processing REDCap data. This package aims to simplify data management workflows for REDCap projects, offering essential tools for data manipulation and validation. ['REDCap'](https://projectredcap.org) (Research Electronic Data CAPture) is a secure web application for building and managing online surveys and databases, developed at Vanderbilt University.
+##RedcapLite: A Lightweight Interface for REDCap
+
+Overview: RedcapLite provides a streamlined interface for interacting with REDCap (Research Electronic Data Capture) via its API. Designed for flexibility and efficiency, this package is ideal for researchers and data managers who need efficient tools for handling REDCap data exports or connecting to the REDCap API for streamlined workflows.
+
+Key Features:
+
+- **Data Retrieval:** Fetch raw data directly from REDCap.
+
+- **Preprocessing:** Add value labels, handle checkbox fields, and assign column attributes.
+
+- **Project Support:** Suitable for both longitudinal and non-longitudinal projects.
+
+- **Data Storage:** Save processed data in reusable formats.
+
+##Installation
+
+You can install the release version of RedcapLite from CRAN:
+
+``` r
+# install.packages("pak")
+pak::pak("Waiguru254/RedcapLite")
+```
+### Install by `remotes` package
+The development version can be installed from GitHub after installing the remotes package:
+This is a basic example which shows you how to solve a common problem:
+
+``` r
+install.packages("remotes") # Install the 'remotes' package if not already installed
+remotes::install_github("Waiguru254/RedcapLite")
+### Load the package
+library(RedcapLite)
+
+```
 
 ## Features
 
-- Streamlined data export from REDCap via API
-- Basic data preprocessing and cleaning functions
-- Simple validation checks for data quality
-- Lightweight alternative to full-scale REDCap management packages
+- **Easy connection to REDCap projects via the API.**
 
-## Installation
+- **Tools for preprocessing REDCap data.**
 
-You can install the development version of RedcapLite from GitHub:
+- **Automated generation of reports**:
+  - Identify outliers.
+  - Handle missing values.
 
-```r
-# install.packages("remotes")
-remotes::install_github("username/RedcapLite")
-```
+- **Follow-up tracking**:
+  - Manage and monitor identified data queries.
 
-## Usage
+- **Lightweight and intuitive interface**:
+  - Simplifies common REDCap workflows.
+  
+ ##Example
 
-Here's a basic example of how to use RedcapLite:
-
+This is a basic example showing how to connect to a REDCap project and retrieve data:
 ```r
 library(RedcapLite)
+# Example: Connecting to a REDCap project
+api_url <- "https://your-redcap-instance/api/"
+api_token <- "YOUR_API_TOKEN"
 
-# Connect to your REDCap project
-project <- redcap_connect(url = "your_redcap_url",
-                         token = "your_api_token")
-
-# Export data
-data <- redcap_export(project)
-
-# Basic data validation
-validation_report <- validate_data(data)
+data <- redcap_read(api_url = api_url, api_token = api_token)
+head(data)
 ```
+You'll need to provide your own REDCap API URL and token.
 
-## Documentation
+##Getting Help
 
-For more detailed information about package functions and usage examples, please refer to our package documentation:
+If you encounter any issues or have questions about the package, please file an issue on GitHub with a minimal reproducible example.
 
-```r
-?RedcapLite
-browseVignettes("RedcapLite")
-```
+##About
 
-## Getting Help
+Package: RedcapLite
 
-If you encounter any bugs or have feature requests, please file an issue on [GitHub](https://github.com/username/RedcapLite/issues).
+Authors: [Your Name], [Collaborator Names if any]
 
-## Contributing
+Maintainer: [Your Name] (your-email@example.com)
 
-Contributions to RedcapLite are welcome! Please refer to our contributing guidelines for more information.
+License: MIT + file LICENSE
 
-## About
+Depends: R (>= 3.6.0)
 
-### Package Information
-- Package: RedcapLite
-- License: [Your chosen license]
-- Encoding: UTF-8
-- Depends: R (>= 4.0.0)
+For more details about REDCap, visit REDCap.
 
-### Authors
-[Your Name/Team]
-
-## License
-
-This project is licensed under [Your chosen license] - see the LICENSE file for details.
-
-## Acknowledgments
-
-- REDCap (Research Electronic Data Capture)
-- The R community
-
-Note: Replace placeholders (like [Your Name/Team], username/RedcapLite, etc.) with actual information specific to your package.
