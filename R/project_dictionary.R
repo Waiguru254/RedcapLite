@@ -19,6 +19,3 @@ project_dictionary <- function(token, url ) {
     )
   return(result)
 }
-#
-#dict <- project_dictionary(Sys.getenv('TOKEN_ANIMAL_ENROL_MARSABIT'),url)
-
