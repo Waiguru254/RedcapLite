@@ -21,7 +21,7 @@ Built with adaptability and performance in mind, this package caters to the need
 
 - **Data Storage:** Save processed data in reusable formats.
 
-##Installation
+**Installation**
 
 To install the release version of RedcapLite from CRAN with ease, you can use the pak package, which simplifies dependency management and package installation in R. Begin by ensuring the pak package is installed, and then use it to fetch and install RedcapLite directly from its repository. This approach not only ensures you get the latest release but also resolves dependencies efficiently for a seamless setup. Here’s how you can do it:
 
@@ -66,7 +66,7 @@ library(RedcapLite)
 api_url <- "https://your-redcap-instance/api/"
 api_token <- "YOUR_API_TOKEN"
 
-data <- redcap_read(api_url = api_url, api_token = api_token)
+data <- readcapdata(api_url = api_url, api_token = api_token)
 head(data)
 ```
 You'll need to provide your own REDCap API URL and token.
