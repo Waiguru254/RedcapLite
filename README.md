@@ -7,7 +7,9 @@
 
 **RedcapLite: A Lightweight Interface for REDCap**
 
-Overview: RedcapLite provides a streamlined interface for interacting with REDCap (Research Electronic Data Capture) via its API. Designed for flexibility and efficiency, this package is ideal for researchers and data managers who need efficient tools for handling REDCap data exports or connecting to the REDCap API for streamlined workflows.
+RedcapLite is a streamlined interface designed for interacting with REDCap (Research Electronic Data Capture) through its API. It offers researchers and data managers a flexible and efficient solution to handle various tasks, such as exporting data from REDCap or integrating with the API for smoother workflows.
+
+Built with adaptability and performance in mind, this package caters to the needs of those managing complex datasets or requiring robust tools for optimizing REDCap-related processes. RedcapLite simplifies and enhances the user experience, making it an ideal choice for improving data management efficiency.
 
 **Key Features:**
 
