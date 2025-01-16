@@ -23,7 +23,7 @@ Built with adaptability and performance in mind, this package caters to the need
 
 ##Installation
 
-You can install the release version of RedcapLite from CRAN:
+To install the release version of RedcapLite from CRAN with ease, you can use the pak package, which simplifies dependency management and package installation in R. Begin by ensuring the pak package is installed, and then use it to fetch and install RedcapLite directly from its repository. This approach not only ensures you get the latest release but also resolves dependencies efficiently for a seamless setup. Here’s how you can do it:
 
 ``` r
 # install.packages("pak")
