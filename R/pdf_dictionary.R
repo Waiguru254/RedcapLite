@@ -1,7 +1,3 @@
-library(dplyr)
-library(stringr)
-library(rmarkdown)
-
 create_form_table <- function(data) {
   # CSS styles for the table
   css_styles <- "
