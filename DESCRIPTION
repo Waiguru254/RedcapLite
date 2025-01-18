@@ -22,5 +22,6 @@ Imports:
     jsonlite,
     dplyr,
     tidyr,
-    purrr
+    purrr,
+    dplyr
 RoxygenNote: 7.3.2
