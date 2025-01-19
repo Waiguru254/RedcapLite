@@ -108,6 +108,7 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
           ### Make all empty entries to be NA for consistency.
           ### Make is easy in data management to use is.na() without having to ==""
           dplyr::mutate(across(everything(), ~ ifelse(. == "", NA, .)))  |>
+        dplyr::filter(!if_all(everything(), ~ is.na(.) | . == ""))|>
           dplyr::select(dplyr::starts_with('record_id'), dplyr::starts_with('redcap_'), dplyr::everything())
       } else {
         data <- jsonlite::fromJSON(httr::content(httr::POST(url, body = formData, encode = "form"),'text'))
