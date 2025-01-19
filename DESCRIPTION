@@ -23,5 +23,5 @@ Imports:
     dplyr,
     tidyr,
     purrr,
-    dplyr
+    janitor
 RoxygenNote: 7.3.2
