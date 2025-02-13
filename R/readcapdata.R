@@ -260,7 +260,7 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
 
         if (column %in% colnames(data)) {
           # Assign the label as an attribute
-          try(attr(data[[column]], "label") <- label,, silent =TRUE)
+          try(attr(data[[column]], "label") <- label, silent =TRUE)
         }
       }
 
