@@ -105,7 +105,7 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
       #### Check whether you need to drop empty columns
       if (isTRUE(drop_empty)) {
         data <- jsonlite::fromJSON(httr::content(httr::POST(url, body = formData, encode = "form"),'text')) |>
-          janitor::remove_empty('cols')
+          janitor::remove_empty()|>
           ### Make all empty entries to be NA for consistency.
           ### Make is easy in data management to use is.na() without having to ==""
           dplyr::mutate(across(everything(), ~ ifelse(. == "", NA, .)))  |>
