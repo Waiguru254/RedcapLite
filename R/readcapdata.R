@@ -176,7 +176,8 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
                   selected <- names(x)[x == 1]
                   if (length(selected) > 0) {
                     values <- sub(paste0(prefix, "___"), "", selected)
-                    paste0(" ", paste(sub("_", "-", values), collapse = " "), " ")
+                    paste(sub("_", "-", values), collapse = " ")
+                    ##paste0(" ", paste(sub("_", "-", values), collapse = " "), " ")
                   } else {
                     ""
                   }
