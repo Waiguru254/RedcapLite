@@ -71,7 +71,50 @@
 #' @export
 
 readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, drop_empty = FALSE, preprocess_data = FALSE, list_event_form = FALSE, file_name = NULL) {
+   # Define the mchoice constructor function
+mchoice <- function(values, levels, labels, label = NULL) {
+  if (!is.numeric(values) && !is.character(values)) {
+    stop("values should be either numeric or character")
+  }
+  if (length(levels) != length(labels)) {
+    stop("levels and labels must have the same length")
+  }
+  
+  # Create a structure with attributes
+  obj <- structure(
+    values,
+    class = "mchoice",
+    levels = levels,
+    labels = labels,
+    label = label
+  )
+  return(obj)
+}
 
+# Define conversion function
+as.mchoice <- function(x, levels, labels, label = NULL) {
+  if (!is.numeric(x) && !is.character(x)) {
+    stop("x should be either numeric or character")
+  }
+  if (length(levels) != length(labels)) {
+    stop("levels and labels must have the same length")
+  }
+  
+  # Convert existing column to mchoice
+  obj <- structure(
+    x,
+    class = "mchoice",
+    levels = levels,
+    labels = labels,
+    label = label
+  )
+  return(obj)
+}
+
+# Define is.mchoice() function to check class
+is.mchoice <- function(x) {
+  inherits(x, "mchoice")
+}
     # Displaying the Event and Form names for the project
     if (isTRUE(list_event_form)) {
       retrieve_redcap_events_forms(token = token, url = url)
@@ -137,7 +180,11 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
         ) %>%
         dplyr::select(column_name, label) |>
         dplyr::filter(column_name %in% names(data))
-
+        
+      ### Selecting value and column labels for the checbox columns 
+        checkbox_val_labels <- checkbox_mapping |>
+         dplyr::select(column_name,value, label) |> dplyr::rename(labels =label)
+         print(checkbox_val_labels)
       ### Column label data
       column_label_data <- project_codebook |>
         dplyr::select(field_name, field_label) |>
@@ -198,6 +245,15 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
                 df
               }, .init = df)
             }
+            df <- df %>%
+              mutate(
+                !!prefix := as.mchoice(
+                  Color_Choice,
+                  levels = checkbox_val_labels$value[checkbox_val_labels$column_name == prefix],
+                  labels = checkbox_val_labels$labels[checkbox_val_labels$column_name == prefix]
+                )
+              )
+
             df
           } %>%
           # Dynamically select and reorder columns
