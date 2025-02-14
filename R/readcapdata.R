@@ -166,7 +166,7 @@ is.mchoice <- function(x) {
         dplyr::filter(field_name %in% names(data))
 
       ### Processing the checkbox labels
-      checkbox_mapping <- project_codebook %>%
+      checkbox_mapping_1 <- project_codebook %>%
         dplyr::filter(field_type == "checkbox", !is.na(select_choices_or_calculations)) %>%
         dplyr::mutate(
           choices = strsplit(select_choices_or_calculations, "\\|")
@@ -177,7 +177,9 @@ is.mchoice <- function(x) {
           value = sapply(parts, `[`, 1),
           label = sapply(parts, `[`, 2),
           column_name = paste0(field_name, "___", gsub("-", "_", value))
-        ) %>%
+        )
+       ### Check labels
+       checkbox_mapping <- checkbox_mapping_1 %>%
         dplyr::select(column_name, label) |>
         dplyr::filter(column_name %in% names(data))
         
