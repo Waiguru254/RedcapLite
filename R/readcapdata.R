@@ -183,10 +183,10 @@ is.mchoice <- function(x) {
         dplyr::select(column_name, label) |>
         dplyr::filter(column_name %in% names(data))
         
-      ### Selecting value and column labels for the checbox columns 
+      ### Selecting value and column labels for the checkbox columns 
         checkbox_val_labels <- checkbox_mapping_1 |>
          dplyr::select(column_name,value, label) |> dplyr::rename(labels =label)
-         print(checkbox_val_labels)
+
       ### Column label data
       column_label_data <- project_codebook |>
         dplyr::select(field_name, field_label) |>
@@ -201,7 +201,7 @@ is.mchoice <- function(x) {
       if (exists("checkbox_mapping") && nrow(checkbox_mapping) > 0) {
         column_label_data <- dplyr::bind_rows(column_label_data, checkbox_mapping)
 
-        ### Organizing the single select column name and attched the associated value labels
+        ### Organizing the single select column name and attached the associated value labels
         ### Cleaning and processing checkbox columns and ordering according to the codebooks in the server
 
         data <- data %>%
@@ -247,14 +247,14 @@ is.mchoice <- function(x) {
                 df
               }, .init = df)
             }
-            df <- df %>%
-              mutate(
-                !!prefix := as.mchoice(
-                  Color_Choice,
-                  levels = checkbox_val_labels$value[checkbox_val_labels$column_name == prefix],
-                  labels = checkbox_val_labels$labels[checkbox_val_labels$column_name == prefix]
-                )
-              )
+            #df <- df %>%
+            #  mutate(
+            #    !!prefix := as.mchoice(
+            #       .data[[prefix]],
+             #     levels = checkbox_val_labels$value[checkbox_val_labels$column_name == paste(prefix, sep ='')],
+             #     labels = checkbox_val_labels$labels[checkbox_val_labels$column_name == paste(prefix, sep = '']
+             #   )
+             # )
 
             df
           } %>%
