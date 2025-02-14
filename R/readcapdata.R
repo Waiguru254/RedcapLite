@@ -184,7 +184,7 @@ is.mchoice <- function(x) {
         dplyr::filter(column_name %in% names(data))
         
       ### Selecting value and column labels for the checbox columns 
-        checkbox_val_labels <- checkbox_mapping |>
+        checkbox_val_labels <- checkbox_mapping_1 |>
          dplyr::select(column_name,value, label) |> dplyr::rename(labels =label)
          print(checkbox_val_labels)
       ### Column label data
