@@ -12,6 +12,7 @@ readcapdata(
   forms = NULL,
   drop_empty = FALSE,
   preprocess_data = FALSE,
+  compact_form = TRUE,
   list_event_form = FALSE,
   file_name = NULL
 )
@@ -27,11 +28,15 @@ readcapdata(
 
 \item{forms}{A vector or NULL. Specific forms to export.}
 
-\item{drop_empty}{Logical. If TRUE, empty columns will be dropped. Defaults to `FALSE`.}
+\item{drop_empty}{Logical. If TRUE, empty columns will be dropped. Defaults to `FALSE`. This option works only when `preprocess_data = TRUE`.}
 
 \item{preprocess_data}{Logical. If TRUE, processes data to include value labels and column attributes. Defaults to `FALSE`.}
 
-\item{file_name}{A character string or NULL. If provided, saves the data to an RDS file. Include the extension .rds in the file_name}
+\item{compact_form}{Logical. If TRUE, drops expanded checkbox columns, keeping only the main field. This requires `preprocess_data = TRUE`. Defaults to `TRUE`.}
+
+\item{list_event_form}{Logical. If TRUE, retrieves a mapping of events and forms for longitudinal projects.}
+
+\item{file_name}{A character string or NULL. If provided, saves the data to an RDS file. Include the extension .rds in the file_name.}
 }
 \value{
 A data frame containing the requested REDCap data. If `preprocess_data = TRUE`,
@@ -40,6 +45,7 @@ the returned data frame includes:
 - Processed checkbox columns.
 - Column labels as attributes.
 - Special handling for event names and repeat instruments.
+- If `compact_form = TRUE`, expanded checkbox columns are dropped.
 }
 \description{
 A function to retrieve and process data from REDCap (Research Electronic Data Capture) via its API.
@@ -53,6 +59,7 @@ The function performs the following operations:
   - Processes single-select fields.
   - Handles checkbox fields.
   - Adds value labels and column attributes.
+- If `compact_form = TRUE` (requires `preprocess_data = TRUE`), removes expanded checkbox columns while keeping only the main field.
 - Supports both raw and processed data export formats.
 - Can optionally save the exported data to a file.
 }
@@ -61,6 +68,8 @@ The function performs the following operations:
 - Large exports may take significant time to process.
 - When `preprocess_data = TRUE`, additional API calls are made to fetch the data dictionary.
 - The function handles both longitudinal and non-longitudinal projects.
+- `drop_empty = TRUE` only works when `preprocess_data = TRUE`.
+- `compact_form = TRUE` removes expanded checkbox columns and requires `preprocess_data = TRUE`.
 }
 \examples{
 \dontrun{
@@ -76,7 +85,8 @@ processed_data <- readcapdata(
     url = "YOUR_REDCAP_API_URL",
     preprocess_data = TRUE,
     drop_empty = TRUE,
-    file_name = "my_redcap_export"
+    compact_form = TRUE,
+    file_name = "my_redcap_export.rds"
 )
 
 # Export specific fields

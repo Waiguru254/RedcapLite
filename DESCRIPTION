@@ -16,11 +16,13 @@ Description:
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Depends: R (>= 4.0.0)
+Depends: 
+    dplyr,
+    ggplot2,
+    R (>= 4.0.0)
 Imports:
     httr,
     jsonlite,
-    dplyr,
     tidyr,
     purrr,
     janitor
