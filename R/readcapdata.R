@@ -166,9 +166,22 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
       dplyr::filter(column_name %in% names(data))
       
     ### Selecting value and column labels for the checkbox columns 
-     checkbox_val_labels <- checkbox_mapping_1 |>
-       dplyr::select(column_name,value, label) |>
-       dplyr::rename(labels =label)
+    ### Creating value and label of checkbox columns
+      checkbox_col_map <- checkbox_mapping_1 |>
+        dplyr::select(field_name, select_choices_or_calculations)  %>%
+          dplyr::mutate(
+            value_label_map = purrr::map(select_choices_or_calculations, ~ {
+              parts <- strsplit(.x, "\\|")[[1]]
+              list(
+                values = as.integer(sub(",.*", "", parts)),
+                labels = trimws(sub(".*,", "", parts))
+              )
+            })
+          ) |>
+        dplyr::select(- c(select_choices_or_calculations)) |>
+        dplyr::group_by(field_name) |>
+        dplyr::filter(dplyr::row_number() == 1) |>
+        dplyr::ungroup()
 
     ### Column label data
     column_label_data <- project_codebook |>
