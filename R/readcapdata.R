@@ -230,7 +230,17 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
               df
             }, .init = df)
           }
-
+          ### Adding value labels to checkbox columns
+          df <- df %>%
+            dplyr::mutate(across(checkbox_col_map$field_name, ~ {
+              check_map_data <- checkbox_col_map$value_label_map[[match(cur_column(), checkbox_col_map$field_name)]]
+              as.mchoice(.x, levels = check_map_data$values, labels = check_map_data$labels)
+            }))
+          
+          ### Dropping expanded columns
+         if (compact_form) {
+          data <- data[, !names(data) %in% paste(checkbox_select_map$field_name,gsub('-','_',checkbox_select_map$value_label_map[[2]]$values), sep = "___")]
+          }
           df
         } %>%
         # Dynamically select and reorder columns
@@ -269,13 +279,6 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
           map_data <- single_select_map$value_label_map[[match(cur_column(), single_select$field_name)]]
           factor(.x, levels = map_data$values, labels = map_data$labels)
         }))
-                ### Adding value labels to checkbox columns
-      data <- data %>%
-        dplyr::mutate(across(checkbox_col_map$field_name, ~ {
-          check_map_data <- checkbox_col_map$value_label_map[[match(cur_column(), checkbox_col_map$field_name)]]
-          as.mchoice(.x, levels = check_map_data$values, labels = check_map_data$labels)
-        }))
-
     }
 
     ### Iterate over unique column names from `column_label_data`
@@ -303,9 +306,7 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
         try(attr(data[[column]], "label") <- label, silent =TRUE)
       }
     }
-   if (compact_form) {
-    data <- data[, !names(data) %in% paste(checkbox_select_map$field_name,gsub('-','_',checkbox_select_map$value_label_map[[2]]$values), sep = "___")]
-   }
+
   } else {
     response <- httr::POST(url, body = formData, encode = "form")
     result <- httr::content(response,'text')
