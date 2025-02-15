@@ -18,9 +18,6 @@
   
   # Define conversion function
   as.mchoice <- function(x, levels, labels, label = NULL) {
-    if (!is.numeric(x) && !is.character(x)) {
-      stop("x should be either numeric or character")
-    }
     if (length(levels) != length(labels)) {
       stop("levels and labels must have the same length")
     }
