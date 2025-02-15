@@ -171,7 +171,7 @@ multabyl <- function(data, column, by = NULL, percent_by = "column", overall = "
     table_df <- table_df[, "Frequency (%)", drop = FALSE]  # Keep only the formatted column
   } else {
     table_df <- as.data.frame(
-      mapply(function(count, percent) sprintf("%d (%.1f%%)", count, percent), table_df, table_percent)
+      mapply(function(count, percent) sprintf("%d(%.1f%%)", count, percent), table_df, table_percent)
     )
   }
   
