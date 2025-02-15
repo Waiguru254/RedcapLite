@@ -252,7 +252,7 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
           
           ### Dropping expanded columns
          if (compact_form) {
-          data <- data[, !names(data) %in% paste(checkbox_select_map$field_name,gsub('-','_',checkbox_select_map$value_label_map[[2]]$values), sep = "___")]
+          data <- data[, !names(data) %in% paste(checkbox_col_map$field_name,gsub('-','_',checkbox_col_map$value_label_map[[2]]$values), sep = "___")]
           }
           df
         } %>%
