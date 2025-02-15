@@ -243,17 +243,6 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
               df
             }, .init = df)
           }
-          ### Adding value labels to checkbox columns
-          df <- df %>%
-            dplyr::mutate(across(checkbox_col_map$field_name, ~ {
-              check_map_data <- checkbox_col_map$value_label_map[[match(cur_column(), checkbox_col_map$field_name)]]
-              as.mchoice(.x, levels = check_map_data$values, labels = check_map_data$labels)
-            }))
-          
-          ### Dropping expanded columns
-         if (compact_form) {
-          df <- df[, !names(df) %in% paste(checkbox_col_map$field_name,gsub('-','_',checkbox_col_map$value_label_map[[2]]$values), sep = "___")]
-          }
           df
         } %>%
         # Dynamically select and reorder columns
@@ -272,6 +261,20 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
             # Replace empty strings with NA for consistency
             dplyr::mutate(across(everything(), ~ ifelse(. == "", NA, .)))
         }
+      
+      ### Adding value labels to checkbox columns
+      data <- data %>%
+        dplyr::mutate(across(checkbox_col_map$field_name, ~ {
+          check_map_data <- checkbox_col_map$value_label_map[[match(cur_column(), checkbox_col_map$field_name)]]
+          as.mchoice(.x, levels = check_map_data$values, labels = check_map_data$labels)
+        }))
+      
+      ### Dropping expanded columns
+      #if (compact_form) {
+      #data <- data[, !names(data) %in% paste(checkbox_col_map$field_name,gsub('-','_',checkbox_col_map$value_label_map[[1]]$values), sep = "___")]
+      #}
+
+      
     }
 
     ### Adding the value labels with error handling
