@@ -18,12 +18,13 @@ Encoding: UTF-8
 LazyData: true
 Depends: 
     dplyr,
-    ggplot2,
     R (>= 4.0.0)
 Imports:
     httr,
     jsonlite,
     tidyr,
     purrr,
-    janitor
+    janitor,
+    reshape2,
+    ggplot2
 RoxygenNote: 7.3.2
