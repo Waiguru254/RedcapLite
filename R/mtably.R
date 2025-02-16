@@ -141,8 +141,7 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
     total_count <- length(data[[column]])
   }
 
-  
-   ### Compute percentages
+  ### Compute percentages
   if (is.null(by)) {
     # # One-way table: Compute frequency percentages
     #total_count <- sum(data[[column]] != "" & !is.na(data[[column]]), na.rm = TRUE)
@@ -194,12 +193,19 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
               plot.title = element_text(hjust = 0.5, face = "bold"))
     } else {
       # Two-way faceted bar plot with distinct borders
-      plot_data <- reshape2::melt(table_matrix)
-      colnames(plot_data) <- c("Label", "Category", "Count")
-      plot_data <- plot_data %>%
-        dplyr::group_by(if(percent_by == 'row') {Label} else {Category}) %>%
-        dplyr::mutate(Percent = round((Count / sum(Count, na.rm = TRUE)) * 100, 1)) |> dplyr::ungroup()
+      if(percent_by == 'row') {
+        plot_data <- reshape2::melt(table_matrix)
+        colnames(plot_data) <- c("Label", "Category", "Count")
       
+        plot_data <- plot_data %>%
+          dplyr::group_by(if(percent_by == 'row') {Label} else {Category}) %>%
+          dplyr::mutate(Percent = round((Count / sum(Count, na.rm = TRUE)) * 100, 1)) |> dplyr::ungroup()
+      } else {
+        value_mat <- apply(table_percent, c(1,2), as.numeric)  # Convert to numeric
+        plot_data <- reshape2::melt(value_mat, varnames = c("Label", "Category"), value.name = "Count")
+        plot_data$Percent <- round(plot_data$Count, 1)
+        colnames(plot_data) <- c("Label", "Category", "Count", "Percent")
+      }
       p <- ggplot(plot_data, aes(x = as.factor(Label), y = Count, fill = Category)) +
         geom_bar(stat = "identity", position = "dodge") +
         geom_text(aes(label = sprintf("%.1f%%", Percent)), 
