@@ -80,7 +80,7 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
   ### checking the options
   if (compact_form) {preprocess_data = TRUE}
   if (drop_empty) {preprocess_data = TRUE}
-  validate_params(preprocess_data, compact_form, drop_empty)
+  #validate_params(preprocess_data, compact_form, drop_empty)
 
   # Displaying the Event and Form names for the project
   if (isTRUE(list_event_form)) {
