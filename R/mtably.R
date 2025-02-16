@@ -125,8 +125,9 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
   
   # Compute row and column totals (only if `by` is provided)
   if (!is.null(by)) {
-    #table_df[[overall]] <- rowSums(table_df, na.rm = TRUE)
-    table_df[[overall]] <- colSums(table_df, na.rm = TRUE)
+    table_df[[overall]] <- rowSums(table_df, na.rm = TRUE)
+    table_df <- rbind(mat, colSums(mat, na.rm = TRUE))
+    print(table_df)
   }
   
   ### Compute percentages
