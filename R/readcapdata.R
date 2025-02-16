@@ -264,7 +264,7 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
       
       ### Adding value labels to checkbox columns
       # Ensure all selected columns exist before applying transformation
-      existing_checkbox_cols <- intersect(checkbox_col_map$field_name, colnames(data))
+      existing_checkbox_cols <- dplyr::intersect(checkbox_col_map$field_name, colnames(data))
       # Apply transformation only to existing checkbox columns
       data <- data %>%
         dplyr::mutate(across(all_of(existing_checkbox_cols), ~ {
