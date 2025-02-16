@@ -78,8 +78,6 @@
 readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, drop_empty = FALSE, preprocess_data = FALSE, compact_form= TRUE, list_event_form = FALSE, file_name = NULL) {
   library(dplyr)
   ### checking the options
-  #if (compact_form && !preprocess_data) {preprocess_data = TRUE}
-  #if (drop_empty && !preprocess_data) {preprocess_data = TRUE}
   validate_params(preprocess_data, compact_form, drop_empty)
 
   # Displaying the Event and Form names for the project
@@ -110,7 +108,7 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
 
   #### When there is need to add the value label and column label to the data.
   ### Just want to download the data in raw format=
-  if (isTRUE(preprocess_data)) {
+  if (preprocess_data) {
 
     #### Check whether you need to drop empty columns
     if (isTRUE(drop_empty)) {
