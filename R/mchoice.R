@@ -130,7 +130,7 @@ is.mchoice <- function(x) {
 
   validate_params <- function(preprocess_data, compact_form, drop_empty) {
     if (!preprocess_data && (compact_form || drop_empty)) {
-      message("Note: You can only have EITHER `compact_form` OR `drop_empty` set to TRUE if `preprocess_data = TRUE`.")
+      message("Note: You can only have  `preprocess_data = TRUE`  for  `compact_form` OR `drop_empty` to work.")
     }
   }
   
