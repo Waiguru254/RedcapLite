@@ -148,7 +148,6 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
     # Compute percentage and replace NA or infinite values with 0
     table_percent <- (table_df[,1] / total_count) * 100
     table_percent[is.na(table_percent) | is.infinite(table_percent)] <- 0
-    print(table_percent)
   } else {
     # Two-way table: Compute percentages based on user selection
     if (percent_by == "row") {
