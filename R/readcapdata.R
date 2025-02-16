@@ -263,12 +263,15 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
         }
       
       ### Adding value labels to checkbox columns
+      # Ensure all selected columns exist before applying transformation
+      existing_checkbox_cols <- intersect(checkbox_col_map$field_name, colnames(data))
+      # Apply transformation only to existing checkbox columns
       data <- data %>%
-        dplyr::mutate(across(checkbox_col_map$field_name, ~ {
+        dplyr::mutate(across(all_of(existing_checkbox_cols), ~ {
           check_map_data <- checkbox_col_map$value_label_map[[match(cur_column(), checkbox_col_map$field_name)]]
           as.mchoice(.x, levels = check_map_data$values, labels = check_map_data$labels)
         }))
-      
+          
       ### Dropping expanded columns
       if (compact_form) {
         data <- data |>
