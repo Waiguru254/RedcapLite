@@ -142,14 +142,29 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
     if (percent_by == "row") {
       table_percent <- round((table_df / table_df[[overall]]) * 100, 1)
     } else {  # Default: column-wise percentages
-      col_totals <- colSums(table_df, na.rm = TRUE)
-      col_totals_matrix <- matrix(rep(col_totals, each = nrow(table_df)), 
-                                nrow = nrow(table_df), byrow = FALSE)  
+     # Apply "Missing" only if show.na is TRUE
+      if (show.na) {
+        data <- data %>%
+          mutate({{ by }} := ifelse(is.na({{ by }}) | {{ by }} == "", "Missing", {{ by }}))
+      }
       
+      col_total <- data %>%
+        group_by({{ by }}) %>%
+        summarise(across(all_of(column), ~ sum(.x != "" & !is.na(.x)), .names = "non_missing_{.col}")) %>%
+        as.data.frame() %>%
+        t()  # Transpose
+      
+      # Convert first row to column names
+      colnames(col_total) <- col_total[1,]
+      col_total <- col_total[-1, , drop = FALSE]  # Remove the first row after setting colnames
+      rownames(col_total) <- NULL  # Remove row names
+      # Ensure columns align properly between `mat` and `mard_matrix`
+      common_cols <- intersect(colnames(table_df), colnames(col_total))  # Find common columns
+      mat_col_total <- col_total[, common_cols, drop = FALSE]  # Reorder `mat`
+      table_df_mat <- table_df[,common_cols, drop = FALSE]  # Reorder `mard_matrix`
       ### Avoid division by zero
-      col_totals_matrix[col_totals_matrix == 0] <- NA  
-      table_percent <- round((table_df / col_totals_matrix) * 100, 1)
-
+      mat_col_total[mat_col_total == 0] <- NA 
+      result_matrix <- round(sweep(table_df_mat, 2, as.numeric(mat_col_total), "/") * 100, 1)
     }
   }
   
