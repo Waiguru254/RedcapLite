@@ -108,7 +108,7 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
       
       # Ensure ordered_levels is a character vector before grepl()
       ordered_levels <- as.character(ordered_levels)
-      
+    
       # Update counts only for whole-word matches
       for (lvl in row_levels) {
         lvl_str <- as.character(lvl)
@@ -125,13 +125,13 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
   
   # Compute row and column totals (only if `by` is provided)
   if (!is.null(by)) {
-    table_df[[overall]] <- rowSums(table_df, na.rm = TRUE)
+    #table_df[[overall]] <- rowSums(table_df, na.rm = TRUE)
+    table_df[[overall]] <- colSums(table_df, na.rm = TRUE)
   }
   
   ### Compute percentages
   if (is.null(by)) {
     # One-way table: Compute frequency percentages
-
     total_count <- sum(table_df$Frequency, na.rm = TRUE)
     # Compute percentage and replace NA or infinite values with 0
     table_percent <- (table_df[,1] / total_count) * 100
@@ -144,11 +144,12 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
     } else {  # Default: column-wise percentages
       col_totals <- colSums(table_df, na.rm = TRUE)
       col_totals_matrix <- matrix(rep(col_totals, each = nrow(table_df)), 
-                                nrow = nrow(table_df), byrow = FALSE)
+                                nrow = nrow(table_df), byrow = FALSE)  
       
       ### Avoid division by zero
       col_totals_matrix[col_totals_matrix == 0] <- NA  
       table_percent <- round((table_df / col_totals_matrix) * 100, 1)
+
     }
   }
   
