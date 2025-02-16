@@ -85,6 +85,7 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
     
     if (!is.null(by)) {
       by_value <- data[[by]][i]
+
       # Handle missing values in by column
       category <- if (is.na(by_value) || trimws(as.character(by_value)) == "") {
         if (show.na) "Missing" else next
@@ -126,14 +127,12 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
   # Compute row and column totals (only if `by` is provided)
   if (!is.null(by)) {
     table_df[[overall]] <- rowSums(table_df, na.rm = TRUE)
-    table_df <- rbind(mat, colSums(mat, na.rm = TRUE))
-    print(table_df)
   }
   
   ### Compute percentages
   if (is.null(by)) {
     # One-way table: Compute frequency percentages
-    total_count <- sum(table_df$Frequency, na.rm = TRUE)
+    total_count <- sum(data[[column]] != "" & !is.na(data[[column]]), na.rm = TRUE)
     # Compute percentage and replace NA or infinite values with 0
     table_percent <- (table_df[,1] / total_count) * 100
     table_percent[is.na(table_percent) | is.infinite(table_percent)] <- 0
