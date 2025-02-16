@@ -24,8 +24,8 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
   ordered_labels <- attr(data[[column]], "labels")
   ordered_levels <- attr(data[[column]], "levels")
   label_variable <- attr(data[[column]], "label")  # Extract variable label for plot title
-
-
+  
+  
   if (is.null(ordered_labels) || is.null(ordered_levels)) {
     # Extract unique values from the column, treating both NA and "" as missing
     unique_values <- unique(unlist(strsplit(trimws(as.character(data[[column]])), " ")))
@@ -71,21 +71,32 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
     }
     
     table_matrix <- matrix(0, nrow = length(ordered_levels), ncol = length(unique_categories),
-                         dimnames = list(ordered_labels, unique_categories))
+                           dimnames = list(ordered_labels, unique_categories))
   } else {
     # One-way table: Only one column ("Frequency")
     table_matrix <- matrix(0, nrow = length(ordered_levels), ncol = 1,
-                         dimnames = list(ordered_labels, "Frequency"))
-
+                           dimnames = list(ordered_labels, "Frequency"))
   }
   
+  ### Creating a total matrix
+  if (!is.null(by)) {
+    table_total <- table_matrix
+    for(cat in unique_categories) {
+      for(lab in ordered_labels) {
+        table_total[lab, cat] <- sum(data[data[[by]] == cat, column] != "" & !is.na(data[data[[by]] == cat, column]), na.rm = TRUE)
+        if (show.na) {
+          table_total[lab, "Missing"] <- sum(data[[by]] == "" | is.na(data[[by]]), na.rm = TRUE)
+        }
+      }
+    }
+  }
   # Process each row
   for (i in seq_len(nrow(data))) {
     row_values <- data[[column]][i]
     
     if (!is.null(by)) {
       by_value <- data[[by]][i]
-
+      
       # Handle missing values in by column
       category <- if (is.na(by_value) || trimws(as.character(by_value)) == "") {
         if (show.na) "Missing" else next
@@ -109,7 +120,7 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
       
       # Ensure ordered_levels is a character vector before grepl()
       ordered_levels <- as.character(ordered_levels)
-    
+      
       # Update counts only for whole-word matches
       for (lvl in row_levels) {
         lvl_str <- as.character(lvl)
@@ -123,65 +134,40 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
   
   ### Convert to data frame
   table_df <- as.data.frame.matrix(table_matrix)
-  
-  # Compute row and column totals (only if `by` is provided)
-  if (!is.null(by)) {
-    table_df[[overall]] <- rowSums(table_df, na.rm = TRUE)
-  }
-  
-  ### Compute percentages
-  if (is.null(by)) {
-    # One-way table: Compute frequency percentages
+
+  if (show.na) {
     total_count <- sum(data[[column]] != "" & !is.na(data[[column]]), na.rm = TRUE)
+  } else {
+    total_count <- length(data[[column]])
+  }
+
+  
+   ### Compute percentages
+  if (is.null(by)) {
+    # # One-way table: Compute frequency percentages
+    #total_count <- sum(data[[column]] != "" & !is.na(data[[column]]), na.rm = TRUE)
     # Compute percentage and replace NA or infinite values with 0
     table_percent <- (table_df[,1] / total_count) * 100
     table_percent[is.na(table_percent) | is.infinite(table_percent)] <- 0
-
+    print(table_percent)
   } else {
     # Two-way table: Compute percentages based on user selection
     if (percent_by == "row") {
+      table_df[[overall]] <- rowSums(table_df, na.rm = TRUE)
       table_percent <- round((table_df / table_df[[overall]]) * 100, 1)
+      table_percent[,'Overall'] <- round((table_df[,'Overall'] / total_count) * 100, 1)
     } else {  # Default: column-wise percentages
-     # Apply "Missing" only if show.na is TRUE
-      if (show.na) {
-        data <- data %>%
-          mutate({{ by }} := ifelse(is.na({{ by }}) | {{ by }} == "", "Missing", {{ by }}))
-      }
+      table_df[[overall]] <- rowSums(table_total, na.rm = TRUE)
+      table_percent <- round((table_df / table_total) * 100, 1)
+      table_percent[,'Overall'] <- round((table_df[,'Overall'] / total_count) * 100, 1)
       
-      col_total <- data %>%
-        group_by({{ by }}) %>%
-        summarise(across(all_of(column), ~ sum(.x != "" & !is.na(.x)), .names = "non_missing_{.col}")) %>%
-        as.data.frame() %>%
-        t()  # Transpose
-      
-      # Convert first row to column names
-      colnames(col_total) <- col_total[1,]
-      col_total <- col_total[-1, , drop = FALSE]  # Remove the first row after setting colnames
-      rownames(col_total) <- NULL  # Remove row names
-      # Ensure columns align properly between `mat` and `mard_matrix`
-      common_cols <- intersect(colnames(table_df), colnames(col_total))  # Find common columns
-      mat_col_total <- col_total[, common_cols, drop = FALSE]  # Reorder `mat`
-      table_df_mat <- table_df[,common_cols, drop = FALSE]  # Reorder `mard_matrix`
-      ### Avoid division by zero
-      mat_col_total[mat_col_total == 0] <- NA 
-      table_percent <- round(sweep(table_df_mat, 2, as.numeric(mat_col_total), "/") * 100, 1)
     }
   }
   
   #### Fix NaN issues: Replace NaN with 0
   table_percent[is.na(table_percent)] <- 0
-  
-  # Compute overall percentage safely (Only for two-way tables)
-  if (!is.null(by)) {
-    total_sum <- sum(table_df[[overall]], na.rm = TRUE)
-    if (total_sum > 0) {
-      table_percent[[overall]] <- round((table_df[[overall]] / total_sum) * 100, 1)
-    } else {
-      table_percent[[overall]] <- 0  # Avoid NaN in the overall column
-    }
-  }
-  
-  # Format cells as "count (percentage)"
+
+    # Format cells as "count (percentage)"
   if (is.null(by)) {
     table_df$`Frequency (%)` <- sprintf("%d (%.1f%%)", table_df$Frequency, table_percent)
     table_df <- table_df[, "Frequency (%)", drop = FALSE]  # Keep only the formatted column
@@ -233,11 +219,17 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
           plot.title = element_text(hjust = 0.5, face = "bold")
         )
       
-
+      
       
     }
     print(p)  # Display the plot
   }
-  
+  ### Addin an overall row 
+  if (!is.null(by)) {
+    table_final <- rbind(table_df, c(table_total[1,],sum(table_total[1,])))
+    ### Adding the row names
+    rownames(table_final) <- c(ordered_labels,'Total')
+    table_df <- table_final
+  }
   return(table_df)  
 }
