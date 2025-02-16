@@ -19,7 +19,7 @@
 #' @import ggplot2 dplyr reshape2
 #' @export
 
-multabyl <- function(data, column, by = NULL, percent_by = "column", overall = "Overall", show.na = TRUE, plot = FALSE) {
+mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Overall", show.na = TRUE, plot = FALSE) {
   # Extract unique values from the column if labels and levels are missing
   ordered_labels <- attr(data[[column]], "labels")
   ordered_levels <- attr(data[[column]], "levels")

@@ -111,7 +111,7 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
   if (preprocess_data) {
 
     #### Check whether you need to drop empty columns
-    if (isTRUE(drop_empty)) {
+    if (drop_empty) {
       data <- jsonlite::fromJSON(httr::content(httr::POST(url, body = formData, encode = "form"),'text')) |>
         janitor::remove_empty()|>
         ### Make all empty entries to be NA for consistency.

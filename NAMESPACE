@@ -3,7 +3,7 @@
 export(as.mchoice)
 export(is.mchoice)
 export(mchoice)
-export(multabyl)
+export(mtably)
 export(readcapdata)
 import(dplyr)
 import(ggplot2)
