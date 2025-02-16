@@ -164,7 +164,7 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
       table_df_mat <- table_df[,common_cols, drop = FALSE]  # Reorder `mard_matrix`
       ### Avoid division by zero
       mat_col_total[mat_col_total == 0] <- NA 
-      result_matrix <- round(sweep(table_df_mat, 2, as.numeric(mat_col_total), "/") * 100, 1)
+      table_percent <- round(sweep(table_df_mat, 2, as.numeric(mat_col_total), "/") * 100, 1)
     }
   }
   
