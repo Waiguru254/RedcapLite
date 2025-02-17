@@ -19,6 +19,7 @@
 #' @import ggplot2 dplyr reshape2
 #' @export
 
+
 mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Overall", show.na = TRUE, plot = FALSE) {
   # Extract unique values from the column if labels and levels are missing
   ordered_labels <- attr(data[[column]], "labels")
@@ -134,13 +135,13 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
   
   ### Convert to data frame
   table_df <- as.data.frame.matrix(table_matrix)
-
+  
   if (show.na) {
     total_count <- sum(data[[column]] != "" & !is.na(data[[column]]), na.rm = TRUE)
   } else {
     total_count <- length(data[[column]])
   }
-
+  
   ### Compute percentages
   if (is.null(by)) {
     # # One-way table: Compute frequency percentages
@@ -155,7 +156,7 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
       table_percent <- round((table_df / table_df[[overall]]) * 100, 1)
       table_percent[,'Overall'] <- round((table_df[,'Overall'] / total_count) * 100, 1)
     } else {  # Default: column-wise percentages
-      table_df[[overall]] <- rowSums(table_total, na.rm = TRUE)
+      table_df[[overall]] <-  rowSums(table_df, na.rm = TRUE) # rowSums(table_total, na.rm = TRUE)
       table_percent <- round((table_df / table_total) * 100, 1)
       table_percent[,'Overall'] <- round((table_df[,'Overall'] / total_count) * 100, 1)
       
@@ -164,10 +165,10 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
   
   #### Fix NaN issues: Replace NaN with 0
   table_percent[is.na(table_percent)] <- 0
-
-    # Format cells as "count (percentage)"
+  
+  # Format cells as "count (percentage)"
   if (is.null(by)) {
-    table_df$`Frequency (%)` <- sprintf("%d (%.1f%%)", table_df$Frequency, table_percent)
+    table_df$`Frequency (%)` <- sprintf("%  d (%.1f%%)", table_df$Frequency, table_percent)
     table_df <- table_df[, "Frequency (%)", drop = FALSE]  # Keep only the formatted column
   } else {
     table_df <- as.data.frame(
@@ -195,7 +196,7 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
       if(percent_by == 'row') {
         plot_data <- reshape2::melt(table_matrix)
         colnames(plot_data) <- c("Label", "Category", "Count")
-      
+        
         plot_data <- plot_data %>%
           dplyr::group_by(if(percent_by == 'row') {Label} else {Category}) %>%
           dplyr::mutate(Percent = round((Count / sum(Count, na.rm = TRUE)) * 100, 1)) |> dplyr::ungroup()
@@ -231,10 +232,21 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
   }
   ### Addin an overall row 
   if (!is.null(by)) {
-    table_final <- rbind(table_df, c(table_total[1,],sum(table_total[1,])))
-    ### Adding the row names
-    rownames(table_final) <- c(ordered_labels,'Total')
-    table_df <- table_final
+    colnames(table_df) <- paste0(colnames(table_df), "<br>(N = ", c(table_total[1,], sum(table_total[1,])), ")")
+    fancy_table <- knitr::kable(table_df, format = "html", escape = FALSE, align = "c",
+                                caption = paste("<div style='text-align: center; font-weight: bold; color: black;'>", 
+                                                by_variable_lab, "</div>")) %>%
+      kableExtra::kable_styling(full_width = FALSE, position = "center", font_size = 14) %>%
+      kableExtra::row_spec(0, bold = TRUE, extra_css = "border-top: 3px solid black; border-bottom: 3px solid black;") %>%  # Title bold with thick borders
+      kableExtra::row_spec(nrow(table_df), extra_css = "border-bottom: 3px solid black;") %>% # Last row with a bold lower border
+      kableExtra::column_spec(1, italic = TRUE) %>%  # Italicize first column (column 0 in R)
+      kableExtra::row_spec(0, hline_after = TRUE) %>%  # Ensure header row has a separating line
+      kableExtra::row_spec(1:nrow(table_df), extra_css = "text-align: right;") %>% # Align row names to the right
+      kableExtra::pack_rows(label_variable, start_row = 1, end_row = nrow(table_df))  # Group rows under a single label
+    
+  } else {
+    fancy_table <- knitr::kable(table_df, format = "pipe", align = "c", caption = column )
   }
-  return(table_df)  
+  
+  return(fancy_table)   
 }
