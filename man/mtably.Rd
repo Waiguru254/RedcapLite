@@ -9,6 +9,7 @@ mtably(
   column,
   by = NULL,
   percent_by = "column",
+  title = NULL,
   overall = "Overall",
   show.na = TRUE,
   plot = FALSE
@@ -23,6 +24,8 @@ mtably(
 
 \item{percent_by}{Character string indicating how percentages are computed. 
 Options: "column" (default) or "row".}
+
+\item{title}{Character string the title of the table.}
 
 \item{overall}{Character string specifying the name for the overall total column (default: "Overall").}
 

@@ -11,6 +11,7 @@
 #' @param percent_by Character string indicating how percentages are computed. 
 #'        Options: "column" (default) or "row".
 #' @param overall Character string specifying the name for the overall total column (default: "Overall").
+#' @param title Character string the title of the table.
 #' @param show.na Logical. Whether to include missing values in the table (default: TRUE).
 #' @param plot Logical. Whether to generate a bar plot of the results (default: FALSE).
 #'
@@ -19,8 +20,8 @@
 #' @import ggplot2 dplyr reshape2
 #' @export
 
-mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Overall", show.na = TRUE, plot = FALSE) {
-  
+mtably <- function(data, column, by = NULL, percent_by = "column", title = NULL, overall = "Overall", show.na = TRUE, plot = FALSE) {
+
   # Check if the column exists
   if (!column %in% names(data)) stop("Column not found in data")
 
@@ -33,7 +34,7 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
   if (is.null(label_variable) || identical(label_variable, ordered_labels)) {
     label_variable <- column
   }
-
+  if (is.null(title)) title <- label_variable  # Default to column name if title is missing
   if (is.null(ordered_labels) || is.null(ordered_levels)) {
     # Extract unique values from the column, treating both NA and "" as missing
     unique_values <- unique(unlist(strsplit(trimws(as.character(data[[column]])), " ")))
@@ -242,11 +243,11 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
     colnames(table_df) <- paste0(colnames(table_df), "<br>(N = ", c(table_total[1,], sum(table_total[1,])), ")")
     fancy_table <- knitr::kable(table_df, format = "html", escape = FALSE, align = "c",
                                 caption = paste("<div style='text-align: center; font-weight: bold; color: black;'>", 
-                                                by_variable_lab, "</div>")) %>%
+                                                title, "</div>")) %>%
       kableExtra::kable_styling(full_width = FALSE, position = "center", font_size = 14) %>%
       kableExtra::row_spec(0, bold = TRUE, extra_css = "border-top: 3px solid black; border-bottom: 3px solid black;") %>%  # Title bold with thick borders
       kableExtra::row_spec(nrow(table_df), extra_css = "border-bottom: 3px solid black;") %>% # Last row with a bold lower border
-      kableExtra::column_spec(1, italic = TRUE) %>%  # Italicize first column (column 0 in R)
+      kableExtra::column_spec(1, italic = TRUE, width = "100px") %>%  # Italicize first column (column 0 in R)
       kableExtra::row_spec(0, hline_after = TRUE) %>%  # Ensure header row has a separating line
       kableExtra::row_spec(1:nrow(table_df), extra_css = "text-align: right;") %>% # Align row names to the right
       kableExtra::pack_rows(label_variable, start_row = 1, end_row = nrow(table_df))  # Group rows under a single label
@@ -255,11 +256,11 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
     colnames(table_df) <- paste0('Frequency (%)', "<br>(N =",total_count, ")", sep = '')
     # Display as a kable table
     fancy_table <- knitr::kable(table_df, format = "html", escape = FALSE, align = "c",
-                                caption = paste("<div style='text-align: center; font-weight: bold; color: black;'>", label_variable, "</div>")) %>%
+                                caption = paste("<div style='text-align: center; font-weight: bold; color: black;'>",label_variable, "</div>")) %>%
       kableExtra::kable_styling(full_width = FALSE, position = "center", font_size = 14) %>%
       kableExtra::row_spec(0, bold = TRUE, extra_css = "border-top: 3px solid black; border-bottom: 3px solid black;") %>%
       kableExtra::row_spec(nrow(table_df), extra_css = "border-bottom: 3px solid black;") %>%
-      kableExtra::column_spec(1, italic = TRUE)
+      kableExtra::column_spec(1, italic = TRUE, width = "250px")
   }
   
   return(fancy_table)   
