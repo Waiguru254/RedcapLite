@@ -26,5 +26,7 @@ Imports:
     purrr,
     janitor,
     reshape2,
-    ggplot2
+    ggplot2,
+    knitr,
+    kableExtra
 RoxygenNote: 7.3.2
