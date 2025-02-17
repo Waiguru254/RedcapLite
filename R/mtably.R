@@ -256,10 +256,10 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
     # Display as a kable table
     fancy_table <- knitr::kable(table_df, format = "html", escape = FALSE, align = "c",
                                 caption = paste("<div style='text-align: center; font-weight: bold; color: black;'>", label_variable, "</div>")) %>%
-      kable_styling(full_width = FALSE, position = "center", font_size = 14) %>%
-      row_spec(0, bold = TRUE, extra_css = "border-top: 3px solid black; border-bottom: 3px solid black;") %>%
-      row_spec(nrow(table_df), extra_css = "border-bottom: 3px solid black;") %>%
-      column_spec(1, italic = TRUE)
+      kableExtra::kable_styling(full_width = FALSE, position = "center", font_size = 14) %>%
+      kableExtra::row_spec(0, bold = TRUE, extra_css = "border-top: 3px solid black; border-bottom: 3px solid black;") %>%
+      kableExtra::row_spec(nrow(table_df), extra_css = "border-bottom: 3px solid black;") %>%
+      kableExtra::column_spec(1, italic = TRUE)
   }
   
   return(fancy_table)   
