@@ -19,14 +19,21 @@
 #' @import ggplot2 dplyr reshape2
 #' @export
 
-
 mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Overall", show.na = TRUE, plot = FALSE) {
+  
+  # Check if the column exists
+  if (!column %in% names(data)) stop("Column not found in data")
+
   # Extract unique values from the column if labels and levels are missing
   ordered_labels <- attr(data[[column]], "labels")
   ordered_levels <- attr(data[[column]], "levels")
-  label_variable <- attr(data[[column]], "label")  # Extract variable label for plot title
-  
-  
+  label_variable <- attr(data[[column]], "label")  
+
+  # Default to column name if label is missing or incorrectly set
+  if (is.null(label_variable) || identical(label_variable, ordered_labels)) {
+    label_variable <- column
+  }
+
   if (is.null(ordered_labels) || is.null(ordered_levels)) {
     # Extract unique values from the column, treating both NA and "" as missing
     unique_values <- unique(unlist(strsplit(trimws(as.character(data[[column]])), " ")))
@@ -154,11 +161,11 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
     if (percent_by == "row") {
       table_df[[overall]] <- rowSums(table_df, na.rm = TRUE)
       table_percent <- round((table_df / table_df[[overall]]) * 100, 1)
-      table_percent[,'Overall'] <- round((table_df[,'Overall'] / total_count) * 100, 1)
+      table_percent[,overall] <- round((table_df[,overall] / total_count) * 100, 1)
     } else {  # Default: column-wise percentages
       table_df[[overall]] <-  rowSums(table_df, na.rm = TRUE) # rowSums(table_total, na.rm = TRUE)
       table_percent <- round((table_df / table_total) * 100, 1)
-      table_percent[,'Overall'] <- round((table_df[,'Overall'] / total_count) * 100, 1)
+      table_percent[,overall] <- round((table_df[,overall] / total_count) * 100, 1)
       
     }
   }
@@ -184,12 +191,12 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
     if (is.null(by)) {
       # One-way bar plot with percentages as labels
       plot_data <- data.frame(Label = rownames(table_df), Count = as.numeric(table_matrix), Percent = table_percent)
-      p <- ggplot(plot_data, aes(x = as.factor(Label), y = Count, fill = Label)) +
-        geom_bar(stat = "identity", show.legend = FALSE) +
-        geom_text(aes(label = sprintf("%.1f%%", Percent)), vjust = -0.5, size = 3, fontface = "bold") +
-        labs(title = label_variable, x = NULL, y = "Frequency (%)") +
-        theme_minimal() +
-        theme(axis.text.x = element_text(angle = 45, hjust = 1),
+      p <- ggplot2::ggplot(plot_data, aes(x = as.factor(Label), y = Count, fill = Label)) +
+        ggplot2::geom_bar(stat = "identity", show.legend = FALSE) +
+        ggplot2::geom_text(aes(label = sprintf("%.1f%%", Percent)), vjust = -0.5, size = 3, fontface = "bold") +
+        ggplot2::labs(title = label_variable, x = NULL, y = "Frequency (%)") +
+        ggplot2::theme_minimal() +
+        ggplot2::theme(axis.text.x = element_text(angle = 45, hjust = 1),
               plot.title = element_text(hjust = 0.5, face = "bold"))
     } else {
       # Two-way faceted bar plot with distinct borders
@@ -206,18 +213,18 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
         plot_data$Percent <- round(plot_data$Count, 1)
         colnames(plot_data) <- c("Label", "Category", "Count", "Percent")
       }
-      p <- ggplot(plot_data, aes(x = as.factor(Label), y = Count, fill = Category)) +
-        geom_bar(stat = "identity", position = "dodge") +
-        geom_text(aes(label = sprintf("%.1f%%", Percent)), 
+      p <- ggplot2::ggplot(plot_data, aes(x = as.factor(Label), y = Count, fill = Category)) +
+        ggplot2::geom_bar(stat = "identity", position = "dodge") +
+        ggplot2::geom_text(aes(label = sprintf("%.1f%%", Percent)), 
                   position = position_dodge(width = 0.9), 
                   vjust = ifelse(plot_data$Percent > 50, 1.5, -0.2),  # Inside large bars, above small bars
                   color = ifelse(plot_data$Percent > 50, "white", "black"),  # White text inside dark bars
                   size = 4) +
-        labs(title = label_variable, x = by_variable_lab, y = "Frequency") +
-        facet_wrap(~ Category, scales = "free_x") +  # Prevent overflow, limit columns
-        theme_minimal() +
-        coord_cartesian(ylim = c(0, max(plot_data$Count) + 2)) +  # Ensure space above bars
-        theme(
+        ggplot2::labs(title = label_variable, x = by_variable_lab, y = "Frequency") +
+        ggplot2::facet_wrap(~ Category, scales = "free_x") +  # Prevent overflow, limit columns
+        ggplot2::theme_minimal() +
+        ggplot2::coord_cartesian(ylim = c(0, max(plot_data$Count) + 2)) +  # Ensure space above bars
+        ggplot2::theme(
           axis.text.x = element_text(angle = 45, hjust = 1),  # Prevents overlapping x-axis labels
           strip.text = element_text(size = 10, face = "bold"),  # Keeps facet labels readable
           strip.background = element_rect(fill = "lightgray", color = "black"),
@@ -245,7 +252,14 @@ mtably <- function(data, column, by = NULL, percent_by = "column", overall = "Ov
       kableExtra::pack_rows(label_variable, start_row = 1, end_row = nrow(table_df))  # Group rows under a single label
     
   } else {
-    fancy_table <- knitr::kable(table_df, format = "pipe", align = "c", caption = column )
+    colnames(table_df) <- paste0('Frequency (%)', "<br>(N =",total_count, ")", sep = '')
+    # Display as a kable table
+    fancy_table <- knitr::kable(table_df, format = "html", escape = FALSE, align = "c",
+                                caption = paste("<div style='text-align: center; font-weight: bold; color: black;'>", label_variable, "</div>")) %>%
+      kable_styling(full_width = FALSE, position = "center", font_size = 14) %>%
+      row_spec(0, bold = TRUE, extra_css = "border-top: 3px solid black; border-bottom: 3px solid black;") %>%
+      row_spec(nrow(table_df), extra_css = "border-bottom: 3px solid black;") %>%
+      column_spec(1, italic = TRUE)
   }
   
   return(fancy_table)   
