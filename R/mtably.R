@@ -145,9 +145,9 @@ mtably <- function(data, column, by = NULL, percent_by = "column", title = NULL,
   table_df <- as.data.frame.matrix(table_matrix)
   
   if (show.na) {
-    total_count <- sum(data[[column]] != "" & !is.na(data[[column]]), na.rm = TRUE)
-  } else {
     total_count <- length(data[[column]])
+  } else {
+    total_count <- sum(data[[column]] != "" & !is.na(data[[column]]), na.rm = TRUE) 
   }
   
   ### Compute percentages
