@@ -23,7 +23,7 @@
 mtably <- function(formula, data, by = NULL, percent_by = "column", title = NULL, overall = "Overall", show.na = TRUE, plot = FALSE) {
 
   # Check if the column exists
-  if (!column %in% names(data)) stop("Column not found in data")
+ # if (!column %in% names(data)) stop("Column not found in data")
 
   # Ensure formula input
   if (!inherits(formula, "formula")) stop("The first argument must be a formula (e.g., column ~ by)")
