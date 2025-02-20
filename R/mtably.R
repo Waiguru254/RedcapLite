@@ -20,9 +20,20 @@
 #' @import ggplot2 dplyr reshape2
 #' @export
 
-mtably <- function(data, column, by = NULL, percent_by = "column", title = NULL, overall = "Overall", show.na = TRUE, plot = FALSE) {
+mtably <- function(formula, data, by = NULL, percent_by = "column", title = NULL, overall = "Overall", show.na = TRUE, plot = FALSE) {
 
   # Check if the column exists
+  if (!column %in% names(data)) stop("Column not found in data")
+
+  # Ensure formula input
+  if (!inherits(formula, "formula")) stop("The first argument must be a formula (e.g., column ~ by)")
+
+  # Extract variables from formula
+  terms <- all.vars(formula)
+  column <- terms[1]   # First term is the response variable
+  by <- ifelse(length(terms) > 1, terms[2], NULL)  # Second term is grouping variable (if exists)
+  
+  # Check if the column exists in data
   if (!column %in% names(data)) stop("Column not found in data")
 
   # Extract unique values from the column if labels and levels are missing
@@ -247,7 +258,7 @@ mtably <- function(data, column, by = NULL, percent_by = "column", title = NULL,
       kableExtra::kable_styling(full_width = FALSE, position = "center", font_size = 14) %>%
       kableExtra::row_spec(0, bold = TRUE, extra_css = "border-top: 3px solid black; border-bottom: 3px solid black;") %>%  # Title bold with thick borders
       kableExtra::row_spec(nrow(table_df), extra_css = "border-bottom: 3px solid black;") %>% # Last row with a bold lower border
-      kableExtra::column_spec(1, italic = TRUE, width = "100px") %>%  # Italicize first column (column 0 in R)
+      kableExtra::column_spec(1, italic = TRUE, width = "150px") %>%  # Italicize first column (column 0 in R)
       kableExtra::row_spec(0, hline_after = TRUE) %>%  # Ensure header row has a separating line
       kableExtra::row_spec(1:nrow(table_df), extra_css = "text-align: right;") %>% # Align row names to the right
       kableExtra::pack_rows(label_variable, start_row = 1, end_row = nrow(table_df))  # Group rows under a single label
@@ -260,7 +271,7 @@ mtably <- function(data, column, by = NULL, percent_by = "column", title = NULL,
       kableExtra::kable_styling(full_width = FALSE, position = "center", font_size = 14) %>%
       kableExtra::row_spec(0, bold = TRUE, extra_css = "border-top: 3px solid black; border-bottom: 3px solid black;") %>%
       kableExtra::row_spec(nrow(table_df), extra_css = "border-bottom: 3px solid black;") %>%
-      kableExtra::column_spec(1, italic = TRUE, width = "250px")
+      kableExtra::column_spec(1, italic = TRUE, width = "350px")
   }
   
   return(fancy_table)   

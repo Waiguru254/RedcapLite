@@ -5,8 +5,8 @@
 \title{Generate a Frequency Table with Percentages and Optional Plotting}
 \usage{
 mtably(
+  formula,
   data,
-  column,
   by = NULL,
   percent_by = "column",
   title = NULL,
@@ -17,8 +17,6 @@ mtably(
 }
 \arguments{
 \item{data}{A data frame containing the variables to be analyzed.}
-
-\item{column}{A character string specifying the name of the column to summarize. Can include checkbox or multiple-choice columns.}
 
 \item{by}{(Optional) A character string specifying a column for stratification.}
 
@@ -32,6 +30,8 @@ Options: "column" (default) or "row".}
 \item{show.na}{Logical. Whether to include missing values in the table (default: TRUE).}
 
 \item{plot}{Logical. Whether to generate a bar plot of the results (default: FALSE).}
+
+\item{column}{A character string specifying the name of the column to summarize. Can include checkbox or multiple-choice columns.}
 }
 \value{
 A data frame with counts and percentages, optionally with a plot.
