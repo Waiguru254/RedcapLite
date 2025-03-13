@@ -1,125 +1,188 @@
-#' Generate a Frequency Table with Percentages and Optional Plotting
+#' Create formatted contingency tables with percentages
 #'
-#' This function creates a frequency table for a given column in a dataset,
-#' optionally stratified by another variable (`by`). It supports processing of checkbox
-#' and multiple-choice columns, handling them appropriately in the summary.
-#' Additionally, it provides options for computing percentages and visualizing the results with a bar plot.
+#' @description
+#' This function creates nicely formatted contingency tables with percentages for categorical data.
+#' It supports both one-way and two-way tables, and can handle multiple choice columns.
 #'
-#' @param formula A formula specifying the column to summarize and optional stratification variable.
-#' @param data A data frame containing the variables to be analyzed.
-#' @param percent_by Character string indicating how percentages are computed.
-#'        Options: "column" (default) or "row".
-#' @param title Character string the title of the table.
-#' @param overall Character string specifying the name for the overall total column (default: "Overall").
-#' @param show.na Logical. Whether to include missing values in the table (default: TRUE).
-#' @param plot Logical. Whether to generate a bar plot of the results (default: FALSE).
+#' @param formula A formula of the form column ~ by or column ~ NULL, where column is the variable to analyze
+#'        and by is an optional grouping variable.
+#' @param data A data frame containing the variables in the formula.
+#' @param percent_by Character string specifying how to calculate percentages: "column" (default) or "row".
+#' @param title Optional title for the table. If NULL, uses the variable label or column name.
+#' @param overall Character string specifying the label for the overall column.
+#' @param show.na Logical value indicating whether to include NA values as a separate category.
+#' @param plot Logical value indicating whether to generate a plot.
 #'
-#' @return A data frame with counts and percentages, optionally with a plot.
-#'
-#' @import ggplot2 dplyr tidyr
-#' @export
+#' @return A kable table object formatted with kableExtra styling.
 #'
 #' @examples
-#' # Assuming 'data' is your dataset with variables var1, var2, var3, and var_by
-#' mtably(~ var1 + var2 + var3 | var_by, data = data,
-#'                  percent_by = "column", show.na = TRUE, plot = FALSE)
+#' # One-way table
+#' mtabyl(gender ~ NULL, data = survey_data)
 #'
-#' # For a single variable without stratification
-#' mtably(~ var1, data = data, show.na = TRUE, plot = TRUE)
+#' # Two-way table
+#' mtabyl(education ~ gender, data = survey_data, percent_by = "row")
 #'
-mtably <- function(formula, data, percent_by = "column", title = NULL, overall = "Overall", show.na = TRUE, plot = FALSE) {
+#' # With a plot
+#' mtabyl(satisfaction ~ department, data = employee_data, plot = TRUE)
+#'
+#' @importFrom knitr kable
+#' @importFrom kableExtra kable_styling row_spec column_spec pack_rows
+#' @importFrom stats as.formula
+#' @export
+mtabyl <- function(formula, data, percent_by = "column", title = NULL, overall = "Overall",
+                   show.na = TRUE, plot = FALSE) {
+
+  # Validate inputs
+  if (!inherits(formula, "formula")) {
+    formula <- as.formula(formula)
+  }
+
+  if (!is.data.frame(data)) {
+    stop("'data' must be a data frame")
+  }
+
+  if (!percent_by %in% c("column", "row")) {
+    warning("'percent_by' must be either 'column' or 'row'. Using default 'column'")
+    percent_by <- "column"
+  }
 
   # Parse the formula
+  formula_text <- deparse(formula)
+  if (!grepl("~", formula_text)) {
+    stop("Formula must be of the form 'column ~ by' or 'column ~ NULL'")
+  }
+
   formula_parts <- strsplit(as.character(formula)[2], "\\|")
   column <- trimws(strsplit(formula_parts[[1]][1], "\\+")[[1]])
   by <- trimws(strsplit(formula_parts[[1]][2], "\\+")[[1]])
-  ### if by column if NA OR NULL return it as NULL
-  if (is.na(by) || by == 'NA') {
+
+  # Handle NULL or NA in by variable
+  if (is.na(by) || by == 'NA' || by == "NULL") {
     by <- NULL
   }
-  ### Check whether by is a valid column
-   if ((!is.null(by)) && !(by %in% names(data))) {
-     stop("by column not found in data")
-   }
 
-  # Check if the column exists
-  if (!column %in% names(data)) stop("Column not found in data")
+  # Validate column and by variable
+  if (!column %in% names(data)) {
+    stop(sprintf("Column '%s' not found in data", column))
+  }
 
-  # Extract unique values from the column if labels and levels are missing
-  ordered_labels <- attr(data[[column]], "labels")
-  ordered_levels <- attr(data[[column]], "levels")
+  if (!is.null(by) && !(by %in% names(data))) {
+    stop(sprintf("By variable '%s' not found in data", by))
+  }
+
+  # Get variable metadata
   label_variable <- attr(data[[column]], "label")
-
-  # Default to column name if label is missing or incorrectly set
-  if (is.null(label_variable) || identical(label_variable, ordered_labels)) {
+  if (is.null(label_variable)) {
     label_variable <- column
   }
-  if (is.null(title)) title <- label_variable  # Default to column name if title is missing
-  if (is.null(ordered_labels) || is.null(ordered_levels)) {
-    # Extract unique values from the column, treating both NA and "" as missing
-    unique_values <- unique(unlist(strsplit(trimws(as.character(data[[column]])), " ")))
-    unique_values <- unique_values[unique_values != ""]  # Remove empty strings
 
-    # Convert to numeric if possible, but fallback to character
-    numeric_levels <- suppressWarnings(as.numeric(unique_values))
+  if (is.null(title)) {
+    title <- label_variable
+  }
 
-    if (all(!is.na(numeric_levels))) {
-      ordered_levels <- sort(numeric_levels)
-      ordered_labels <- as.character(ordered_levels)
+  # Handle different column types
+  is_mchoice <- inherits(data[[column]], "mchoice") ||
+    inherits(data[[column]], "as.mchoice") ||
+    exists("is.mchoice") && is.mchoice(data[[column]])
+
+  # Extract levels and labels
+  if (is_mchoice) {
+    # Multiple choice handling
+    ordered_labels <- attr(data[[column]], "labels")
+    ordered_levels <- attr(data[[column]], "levels")
+
+    if (is.null(ordered_labels) || is.null(ordered_levels)) {
+      # Extract unique values from the column
+      unique_values <- unique(unlist(strsplit(trimws(as.character(data[[column]])), " ")))
+      unique_values <- unique_values[unique_values != ""]  # Remove empty strings
+
+      # Convert to numeric if possible
+      numeric_levels <- suppressWarnings(as.numeric(unique_values))
+
+      if (all(!is.na(numeric_levels))) {
+        ordered_levels <- sort(numeric_levels)
+        ordered_labels <- as.character(ordered_levels)
+      } else {
+        ordered_levels <- unique_values
+        ordered_labels <- ordered_levels
+      }
     } else {
-      ordered_levels <- sort(unique_values)  # Keep as character if conversion fails
-      ordered_labels <- ordered_levels
+      # Use existing labels and levels
+      ordered_levels <- ordered_levels
+      ordered_labels <- ordered_labels[order(ordered_levels)]
     }
   } else {
-    # Ensure labels and levels are sorted correctly
-    ordered_levels <- as.numeric(ordered_levels)  # Ensure numeric levels
-    ordered_labels <- ordered_labels[order(ordered_levels)]  # Reorder labels
+    # Single select handling
+    if (is.factor(data[[column]])) {
+      ordered_levels <- levels(data[[column]])
+      ordered_labels <- ordered_levels
+    } else {
+      unique_values <- unique(data[[column]])
+      ordered_labels <- unique_values[!is.na(unique_values) &
+                                        !is.null(unique_values) &
+                                        unique_values != ""]
+      ordered_levels <- ordered_labels
+    }
   }
 
-  # Include "Missing" category if show.na = TRUE
+  # Add missing category if requested
   if (show.na) {
-    ordered_levels <- c(ordered_levels, "Missing")
-    ordered_labels <- c(ordered_labels, "Missing")
+    if (is_mchoice) {
+      ordered_levels <- c(unique(ordered_levels), "Missing")
+      ordered_labels <- c(unique(ordered_labels), "Missing")
+    } else {
+      if (is.factor(ordered_levels)) {
+        ordered_levels <- factor(c(as.character(ordered_levels), "Missing"),
+                                 levels = c(levels(ordered_levels), "Missing"))
+      } else {
+        ordered_levels <- c(ordered_levels, "Missing")
+      }
+      ordered_labels <- c(as.character(ordered_labels), "Missing")
+    }
   }
 
-  # If `by` is provided → Create a two-way contingency table
+  # Initialize table matrix
   if (!is.null(by)) {
-    by_variable_lab <- attr(data[[by]], "label")  # Extract variable label for plot title
-    ### Check the label of the by columns
+    # Two-way table
+    by_variable_lab <- attr(data[[by]], "label")
     if (is.null(by_variable_lab)) {
       by_variable_lab <- by
     }
+
     # Get unique categories from by column
     unique_categories <- unique(as.character(data[[by]]))
     unique_categories <- unique_categories[!is.na(unique_categories) & unique_categories != ""]
     unique_categories <- sort(unique_categories)
 
-    # Add Missing category to by column if show.na = TRUE
+    # Add Missing category if requested
     if (show.na) {
       unique_categories <- c(unique_categories, "Missing")
     }
 
+    # Create table matrix
     table_matrix <- matrix(0, nrow = length(ordered_levels), ncol = length(unique_categories),
                            dimnames = list(ordered_labels, unique_categories))
+
+    # Create total matrix for percentage calculations
+    table_total <- table_matrix
+    if (percent_by == "column") {
+      for (cat in unique_categories) {
+        for (lab in ordered_labels) {
+          table_total[lab, cat] <- sum(data[data[[by]] == cat, column] != "" &
+                                         !is.na(data[data[[by]] == cat, column]), na.rm = TRUE)
+        }
+        if (show.na && "Missing" %in% unique_categories) {
+          table_total[, "Missing"] <- sum(data[[by]] == "" | is.na(data[[by]]), na.rm = TRUE)
+        }
+      }
+    }
   } else {
-    # One-way table: Only one column ("Frequency")
+    # One-way table
     table_matrix <- matrix(0, nrow = length(ordered_levels), ncol = 1,
                            dimnames = list(ordered_labels, "Frequency"))
   }
 
-  ### Creating a total matrix
-  if (!is.null(by)) {
-    table_total <- table_matrix
-    for(cat in unique_categories) {
-      for(lab in ordered_labels) {
-        table_total[lab, cat] <- sum(data[data[[by]] == cat, column] != "" & !is.na(data[data[[by]] == cat, column]), na.rm = TRUE)
-        if (show.na) {
-          table_total[lab, "Missing"] <- sum(data[[by]] == "" | is.na(data[[by]]), na.rm = TRUE)
-        }
-      }
-    }
-  }
-  # Process each row
+  # Fill the table matrix
   for (i in seq_len(nrow(data))) {
     row_values <- data[[column]][i]
 
@@ -143,68 +206,77 @@ mtably <- function(formula, data, percent_by = "column", title = NULL, overall =
     if ((is.na(row_values) || trimws(as.character(row_values)) == "") && show.na) {
       table_matrix["Missing", category] <- table_matrix["Missing", category] + 1
     } else if (!is.na(row_values) && trimws(as.character(row_values)) != "") {
-      row_levels <- unlist(strsplit(trimws(as.character(row_values)), " "))  # Extract values
-      row_levels <- suppressWarnings(as.numeric(row_levels))  # Convert if numeric
-      row_levels <- row_levels[!is.na(row_levels)]  # Remove NAs
+      if (is_mchoice) {
+        # Multiple choice handling
+        row_levels <- unlist(strsplit(trimws(as.character(row_values)), " "))
+        row_levels <- row_levels[!is.na(row_levels)]
 
-      # Ensure ordered_levels is a character vector before grepl()
-      ordered_levels <- as.character(ordered_levels)
+        # Ensure ordered_levels is a character vector
+        ordered_levels_char <- as.character(ordered_levels)
 
-      # Update counts only for whole-word matches
-      for (lvl in row_levels) {
-        lvl_str <- as.character(lvl)
-        if (lvl_str %in% ordered_levels) {  # Changed to exact match
-          row_label <- ordered_labels[which(ordered_levels == lvl_str)]
+        # Update counts for matches
+        for (lvl in row_levels) {
+          lvl_str <- as.character(lvl)
+          if (lvl_str %in% ordered_levels_char) {
+            row_label <- ordered_labels[which(ordered_levels_char == lvl_str)]
+            table_matrix[row_label, category] <- table_matrix[row_label, category] + 1
+          }
+        }
+      } else {
+        # Single select handling
+        row_value <- as.character(row_values)
+        if (row_value %in% as.character(ordered_levels)) {
+          row_label <- row_value
           table_matrix[row_label, category] <- table_matrix[row_label, category] + 1
         }
       }
     }
   }
 
-  ### Convert to data frame
+  # Convert to data frame
   table_df <- as.data.frame.matrix(table_matrix)
 
+  # Calculate total count
   if (show.na) {
     total_count <- length(data[[column]])
   } else {
     total_count <- sum(data[[column]] != "" & !is.na(data[[column]]), na.rm = TRUE)
   }
 
-  ### Compute percentages
+  # Calculate percentages
   if (is.null(by)) {
-    # # One-way table: Compute frequency percentages
-    #total_count <- sum(data[[column]] != "" & !is.na(data[[column]]), na.rm = TRUE)
-    # Compute percentage and replace NA or infinite values with 0
-    table_percent <- (table_df[,1] / total_count) * 100
+    # One-way table percentages
+    table_percent <- (table_df[, 1] / total_count) * 100
     table_percent[is.na(table_percent) | is.infinite(table_percent)] <- 0
   } else {
-    # Two-way table: Compute percentages based on user selection
+    # Two-way table percentages
     if (percent_by == "row") {
+      # Row percentages
       table_df[[overall]] <- rowSums(table_df, na.rm = TRUE)
       table_percent <- round((table_df / table_df[[overall]]) * 100, 1)
-      table_percent[,overall] <- round((table_df[,overall] / total_count) * 100, 1)
-    } else {  # Default: column-wise percentages
-      table_df[[overall]] <-  rowSums(table_df, na.rm = TRUE) # rowSums(table_total, na.rm = TRUE)
+      table_percent[, overall] <- round((table_df[, overall] / total_count) * 100, 1)
+    } else {
+      # Column percentages
+      table_df[[overall]] <- rowSums(table_df, na.rm = TRUE)
       table_percent <- round((table_df / table_total) * 100, 1)
-      table_percent[,overall] <- round((table_df[,overall] / total_count) * 100, 1)
-
+      table_percent[, overall] <- round((table_df[, overall] / total_count) * 100, 1)
     }
   }
 
-  #### Fix NaN issues: Replace NaN with 0
+  # Fix NaN issues
   table_percent[is.na(table_percent)] <- 0
 
   # Format cells as "count (percentage)"
   if (is.null(by)) {
-    table_df$`Frequency (%)` <- sprintf("%  d (%.1f%%)", table_df$Frequency, table_percent)
-    table_df <- table_df[, "Frequency (%)", drop = FALSE]  # Keep only the formatted column
+    table_df$`Frequency (%)` <- sprintf("%d (%.1f%%)", table_df$Frequency, table_percent)
+    table_df <- table_df[, "Frequency (%)", drop = FALSE]
   } else {
     table_df <- as.data.frame(
       mapply(function(count, percent) sprintf("%d(%.1f%%)", count, percent), table_df, table_percent)
     )
   }
 
-  ### Adding the row names
+  # Add row names
   rownames(table_df) <- ordered_labels
 
   # Create plot if requested
