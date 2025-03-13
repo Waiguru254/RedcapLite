@@ -206,7 +206,7 @@ mtably <- function(formula, data, percent_by = "column", title = NULL, overall =
 
   ### Adding the row names
   rownames(table_df) <- ordered_labels
-  print(table_df)
+
   # Create plot if requested
   if (plot) {
     if (is.null(by)) {
