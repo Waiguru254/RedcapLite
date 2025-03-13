@@ -7,7 +7,6 @@
 mtably(
   formula,
   data,
-  by = NULL,
   percent_by = "column",
   title = NULL,
   overall = "Overall",
@@ -18,9 +17,7 @@ mtably(
 \arguments{
 \item{data}{A data frame containing the variables to be analyzed.}
 
-\item{by}{(Optional) A character string specifying a column for stratification.}
-
-\item{percent_by}{Character string indicating how percentages are computed. 
+\item{percent_by}{Character string indicating how percentages are computed.
 Options: "column" (default) or "row".}
 
 \item{title}{Character string the title of the table.}
@@ -32,6 +29,8 @@ Options: "column" (default) or "row".}
 \item{plot}{Logical. Whether to generate a bar plot of the results (default: FALSE).}
 
 \item{column}{A character string specifying the name of the column to summarize. Can include checkbox or multiple-choice columns.}
+
+\item{by}{(Optional) A character string specifying a column for stratification.}
 }
 \value{
 A data frame with counts and percentages, optionally with a plot.

@@ -74,8 +74,8 @@
 #' @references
 #' REDCap (Research Electronic Data Capture)
 #' @export
-#' 
-readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, drop_empty = FALSE, preprocess_data = FALSE, compact_form= TRUE, list_event_form = FALSE, file_name = NULL) {
+#'
+readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, drop_empty = FALSE, preprocess_data = TRUE, compact_form= TRUE, list_event_form = FALSE, file_name = NULL) {
   library(dplyr)
   ### checking the options
  # validate_params(preprocess_data, compact_form, drop_empty)
@@ -159,13 +159,13 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
         dplyr::group_by(field_name) |>
         dplyr::filter(dplyr::row_number() == 1) |>
         dplyr::ungroup()
-    
+
      ### Check labels
      checkbox_mapping <- checkbox_mapping_1 %>%
       dplyr::select(column_name, label) |>
       dplyr::filter(column_name %in% names(data))
-      
-    ### Selecting value and column labels for the checkbox columns 
+
+    ### Selecting value and column labels for the checkbox columns
     ### Creating value and label of checkbox columns
       checkbox_col_map <- checkbox_mapping_1 |>
         dplyr::select(field_name, select_choices_or_calculations)  %>%
@@ -261,7 +261,7 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
             # Replace empty strings with NA for consistency
             dplyr::mutate(across(everything(), ~ ifelse(. == "", NA, .)))
         }
-      
+
       ### Adding value labels to checkbox columns
       # Ensure all selected columns exist before applying transformation
       existing_checkbox_cols <- dplyr::intersect(checkbox_col_map$field_name, colnames(data))
@@ -271,14 +271,14 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
           check_map_data <- checkbox_col_map$value_label_map[[match(cur_column(), checkbox_col_map$field_name)]]
           as.mchoice(.x, levels = check_map_data$values, labels = check_map_data$labels)
         }))
-          
+
       ### Dropping expanded columns
       if (compact_form) {
         data <- data |>
           dplyr::select(-matches(paste0("^(", paste(checkbox_col_map$field_name, collapse = "|"), ")___")))
       }
 
-      
+
     }
 
     ### Adding the value labels with error handling

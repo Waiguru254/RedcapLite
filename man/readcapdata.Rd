@@ -11,7 +11,7 @@ readcapdata(
   events = NULL,
   forms = NULL,
   drop_empty = FALSE,
-  preprocess_data = FALSE,
+  preprocess_data = TRUE,
   compact_form = TRUE,
   list_event_form = FALSE,
   file_name = NULL
