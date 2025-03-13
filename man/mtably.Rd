@@ -15,6 +15,8 @@ mtably(
 )
 }
 \arguments{
+\item{formula}{A formula specifying the column to summarize and optional stratification variable.}
+
 \item{data}{A data frame containing the variables to be analyzed.}
 
 \item{percent_by}{Character string indicating how percentages are computed.
@@ -27,10 +29,6 @@ Options: "column" (default) or "row".}
 \item{show.na}{Logical. Whether to include missing values in the table (default: TRUE).}
 
 \item{plot}{Logical. Whether to generate a bar plot of the results (default: FALSE).}
-
-\item{column}{A character string specifying the name of the column to summarize. Can include checkbox or multiple-choice columns.}
-
-\item{by}{(Optional) A character string specifying a column for stratification.}
 }
 \value{
 A data frame with counts and percentages, optionally with a plot.
@@ -40,4 +38,13 @@ This function creates a frequency table for a given column in a dataset,
 optionally stratified by another variable (`by`). It supports processing of checkbox
 and multiple-choice columns, handling them appropriately in the summary.
 Additionally, it provides options for computing percentages and visualizing the results with a bar plot.
+}
+\examples{
+# Assuming 'data' is your dataset with variables var1, var2, var3, and var_by
+mtably(~ var1 + var2 + var3 | var_by, data = data,
+                 percent_by = "column", show.na = TRUE, plot = FALSE)
+
+# For a single variable without stratification
+mtably(~ var1, data = data, show.na = TRUE, plot = TRUE)
+
 }

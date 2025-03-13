@@ -5,21 +5,28 @@
 #' and multiple-choice columns, handling them appropriately in the summary.
 #' Additionally, it provides options for computing percentages and visualizing the results with a bar plot.
 #'
+#' @param formula A formula specifying the column to summarize and optional stratification variable.
 #' @param data A data frame containing the variables to be analyzed.
-#' @param column A character string specifying the name of the column to summarize. Can include checkbox or multiple-choice columns.
-#' @param by (Optional) A character string specifying a column for stratification.
 #' @param percent_by Character string indicating how percentages are computed.
 #'        Options: "column" (default) or "row".
-#' @param overall Character string specifying the name for the overall total column (default: "Overall").
 #' @param title Character string the title of the table.
+#' @param overall Character string specifying the name for the overall total column (default: "Overall").
 #' @param show.na Logical. Whether to include missing values in the table (default: TRUE).
 #' @param plot Logical. Whether to generate a bar plot of the results (default: FALSE).
 #'
 #' @return A data frame with counts and percentages, optionally with a plot.
 #'
-#' @import ggplot2 dplyr reshape2
+#' @import ggplot2 dplyr tidyr
 #' @export
-
+#'
+#' @examples
+#' # Assuming 'data' is your dataset with variables var1, var2, var3, and var_by
+#' mtably(~ var1 + var2 + var3 | var_by, data = data,
+#'                  percent_by = "column", show.na = TRUE, plot = FALSE)
+#'
+#' # For a single variable without stratification
+#' mtably(~ var1, data = data, show.na = TRUE, plot = TRUE)
+#'
 mtably <- function(formula, data, percent_by = "column", title = NULL, overall = "Overall", show.na = TRUE, plot = FALSE) {
 
   # Parse the formula
