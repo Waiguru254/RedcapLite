@@ -20,6 +20,7 @@ Depends:
     dplyr,
     R (>= 4.0.0)
 Imports:
+    data.table,
     httr,
     jsonlite,
     tidyr,
