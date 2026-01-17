@@ -81,7 +81,13 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
     dt <- data.table::as.data.table(df)
     cols <- names(dt)[vapply(dt, is.character, logical(1))]
     if (length(cols) > 0) {
-      dt[, (cols) := lapply(.SD, function(x) data.table::fifelse(x == "", NA_character_, x)), .SDcols = cols]
+      for (col in cols) {
+        data.table::set(
+          dt,
+          j = col,
+          value = data.table::fifelse(dt[[col]] == "", NA_character_, dt[[col]])
+        )
+      }
     }
     as.data.frame(dt)
   }
@@ -310,10 +316,10 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
     }
 
     ### Iterate over unique column names from `column_label_data`
-    label_table <- data.table::as.data.table(column_label_data)
-    label_table <- label_table[!is.na(label) & column_name != ""]
-    label_table[, label := trimws(label)]
-    label_table <- label_table[!duplicated(column_name)]
+    label_table <- as.data.frame(column_label_data)
+    label_table <- label_table[!is.na(label_table$label) & label_table$column_name != "", , drop = FALSE]
+    label_table$label <- trimws(label_table$label)
+    label_table <- label_table[!duplicated(label_table$column_name), , drop = FALSE]
     label_map <- stats::setNames(label_table$label, label_table$column_name)
     label_columns <- intersect(names(label_map), colnames(data))
     for (column in label_columns) {
