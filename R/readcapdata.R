@@ -310,7 +310,11 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
     }
 
     ### Iterate over unique column names from `column_label_data`
-    label_map <- stats::setNames(trimws(column_label_data$label), column_label_data$column_name)
+    label_table <- data.table::as.data.table(column_label_data)
+    label_table <- label_table[!is.na(label) & column_name != ""]
+    label_table[, label := trimws(label)]
+    label_table <- label_table[!duplicated(column_name)]
+    label_map <- stats::setNames(label_table$label, label_table$column_name)
     label_columns <- intersect(names(label_map), colnames(data))
     for (column in label_columns) {
       attr(data[[column]], "label") <- label_map[[column]]
