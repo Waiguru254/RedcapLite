@@ -235,9 +235,9 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
               })
 
               # Add the combined column and update original columns
+              df[[prefix]] <- combined_col
               df <- df %>%
                 mutate(
-                  !!prefix := combined_col,
                   across(all_of(cols), ~ if_else(
                     .data[[prefix]] == "",
                     NA_real_,
@@ -308,16 +308,14 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
     }
 
     ### Iterate over unique column names from `column_label_data`
-    for (column in unique(column_label_data$column_name)) {
-      tryCatch({
-        # Check if the column exists in the data
-        if (column %in% colnames(data)) {
-          # Assign the label as an attribute to the column
-          attr(data[[column]], "label") <- trimws(column_label_data$label[column_label_data$column_name == column])
-        }
-      }, error = function(e) {
-        # warning(paste("Error assigning label to column", column, ":", e))
-      })
+    label_table <- as.data.frame(column_label_data)
+    label_table <- label_table[!is.na(label_table$label) & label_table$column_name != "", , drop = FALSE]
+    label_table$label <- trimws(label_table$label)
+    label_table <- label_table[!duplicated(label_table$column_name), , drop = FALSE]
+    label_map <- stats::setNames(label_table$label, label_table$column_name)
+    label_columns <- intersect(names(label_map), colnames(data))
+    for (column in label_columns) {
+      attr(data[[column]], "label") <- label_map[[column]]
     }
     ### Adding the extra columns to the data
     extra_columns <- c("redcap_event_name", "redcap_repeat_instrument", "redcap_repeat_instance")
