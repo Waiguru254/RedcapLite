@@ -77,6 +77,20 @@
 #'
 readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, drop_empty = FALSE, preprocess_data = TRUE, compact_form= TRUE, list_event_form = FALSE, file_name = NULL) {
   library(dplyr)
+  normalize_empty_to_na <- function(df) {
+    dt <- data.table::as.data.table(df)
+    cols <- names(dt)[vapply(dt, is.character, logical(1))]
+    if (length(cols) > 0) {
+      for (col in cols) {
+        data.table::set(
+          dt,
+          j = col,
+          value = data.table::fifelse(dt[[col]] == "", NA_character_, dt[[col]])
+        )
+      }
+    }
+    as.data.frame(dt)
+  }
   ### checking the options
  # validate_params(preprocess_data, compact_form, drop_empty)
 
@@ -114,10 +128,10 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
     if (drop_empty) {
       data <- jsonlite::fromJSON(httr::content(httr::POST(url, body = formData, encode = "form"),'text')) |>
         janitor::remove_empty()|>
-        ### Make all empty entries to be NA for consistency.
-        ### Make is easy in data management to use is.na() without having to ==""
-        dplyr::mutate(across(everything(), ~ ifelse(. == "", NA, .)))  |>
         dplyr::select(dplyr::starts_with('record_id'), dplyr::starts_with('redcap_'), dplyr::everything())
+      ### Make all empty entries to be NA for consistency.
+      ### Make is easy in data management to use is.na() without having to ==""
+      data <- normalize_empty_to_na(data)
     } else {
       data <- jsonlite::fromJSON(httr::content(httr::POST(url, body = formData, encode = "form"),'text'))
     }
@@ -229,9 +243,9 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
               })
 
               # Add the combined column and update original columns
+              df[[prefix]] <- combined_col
               df <- df %>%
                 mutate(
-                  !!prefix := combined_col,
                   across(all_of(cols), ~ if_else(
                     .data[[prefix]] == "",
                     NA_real_,
@@ -257,10 +271,10 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
               dplyr::starts_with("record_id"),
               dplyr::starts_with("redcap_"),
               dplyr::any_of(selected_columns)
-            ) |>
-            # Replace empty strings with NA for consistency
-            dplyr::mutate(across(everything(), ~ ifelse(. == "", NA, .)))
+            )
         }
+      # Replace empty strings with NA for consistency
+      data <- normalize_empty_to_na(data)
 
       ### Adding value labels to checkbox columns
       # Ensure all selected columns exist before applying transformation
@@ -302,16 +316,14 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
     }
 
     ### Iterate over unique column names from `column_label_data`
-    for (column in unique(column_label_data$column_name)) {
-      tryCatch({
-        # Check if the column exists in the data
-        if (column %in% colnames(data)) {
-          # Assign the label as an attribute to the column
-          attr(data[[column]], "label") <- trimws(column_label_data$label[column_label_data$column_name == column])
-        }
-      }, error = function(e) {
-        # warning(paste("Error assigning label to column", column, ":", e))
-      })
+    label_table <- as.data.frame(column_label_data)
+    label_table <- label_table[!is.na(label_table$label) & label_table$column_name != "", , drop = FALSE]
+    label_table$label <- trimws(label_table$label)
+    label_table <- label_table[!duplicated(label_table$column_name), , drop = FALSE]
+    label_map <- stats::setNames(label_table$label, label_table$column_name)
+    label_columns <- intersect(names(label_map), colnames(data))
+    for (column in label_columns) {
+      attr(data[[column]], "label") <- label_map[[column]]
     }
     ### Adding the extra columns to the data
     extra_columns <- c("redcap_event_name", "redcap_repeat_instrument", "redcap_repeat_instance")
@@ -330,9 +342,9 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
   } else {
     response <- httr::POST(url, body = formData, encode = "form")
     result <- httr::content(response,'text')
-    data <- jsonlite::fromJSON(result) |>
-      # Replace empty strings with NA for consistency
-      dplyr::mutate(across(everything(), ~ ifelse(. == "", NA, .)))
+    data <- jsonlite::fromJSON(result)
+    # Replace empty strings with NA for consistency
+    data <- normalize_empty_to_na(data)
   }
 
 
