@@ -11,23 +11,7 @@ print.tabmult <- function(x, ...) {
     cat("By:", by_label, "\n")
   }
   if (!is.null(wide_table)) {
-    display <- wide_table
-    if ("p_value" %in% names(display)) {
-      display$p_value <- ifelse(
-        is.na(display$p_value),
-        "",
-        formatC(display$p_value, digits = 3, format = "f")
-      )
-    }
-    if ("percent" %in% names(display)) {
-      display$percent <- ifelse(
-        is.na(display$percent),
-        "",
-        formatC(display$percent, digits = 1, format = "f")
-      )
-    }
-    table_out <- knitr::kable(display, format = "simple", align = "l")
-    print(table_out)
+    print(wide_table, row.names = FALSE)
   } else {
     print.data.frame(x, row.names = FALSE)
   }

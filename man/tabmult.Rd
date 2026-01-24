@@ -16,8 +16,7 @@ tabmult(formula, data, percent_by = "column", show.na = TRUE)
 \item{show.na}{Logical value indicating whether to include missing values.}
 }
 \value{
-A data frame with counts, percentages, labels, and p-values. The result has
-class \code{tabmult} and prints a formatted table in the console.
+A data frame with counts, percentages, labels, and p-values.
 }
 \description{
 Create one-way or two-way tabulations for \code{mchoice} variables, including
