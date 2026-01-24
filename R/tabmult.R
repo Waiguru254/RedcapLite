@@ -9,8 +9,7 @@
 #'        "column" (default) or "row". Only used for two-way tables.
 #' @param show.na Logical value indicating whether to include missing values.
 #'
-#' @return A data frame with counts, percentages, labels, and p-values. The
-#' result has class \code{tabmult} and prints a formatted table in the console.
+#' @return A data frame with counts, percentages, labels, and p-values.
 #'
 #' @examples
 #' \dontrun{
@@ -61,13 +60,6 @@ tabmult <- function(formula, data, percent_by = "column", show.na = TRUE) {
   variable_label <- attr(data[[column]], "label")
   if (is.null(variable_label)) {
     variable_label <- column
-  }
-  by_label <- NULL
-  if (!is.null(by)) {
-    by_label <- attr(data[[by]], "label")
-    if (is.null(by_label)) {
-      by_label <- by
-    }
   }
 
   levels_attr <- attr(data[[column]], "levels")
@@ -125,20 +117,7 @@ tabmult <- function(formula, data, percent_by = "column", show.na = TRUE) {
         stringsAsFactors = FALSE
       )
     })
-    results <- do.call(rbind, results)
-    wide_table <- data.frame(
-      level_label = results$level_label,
-      level_value = results$level_value,
-      count = results$count,
-      percent = results$percent,
-      stringsAsFactors = FALSE
-    )
-    out <- results
-    attr(out, "wide_table") <- wide_table
-    attr(out, "variable_label") <- variable_label
-    attr(out, "by_label") <- by_label
-    class(out) <- c("tabmult", "data.frame")
-    return(out)
+    return(do.call(rbind, results))
   }
 
   by_values <- data[[by]]
@@ -206,36 +185,5 @@ tabmult <- function(formula, data, percent_by = "column", show.na = TRUE) {
     )
   }
 
-  results <- do.call(rbind, results)
-  formatted <- data.frame(
-    level_label = results$level_label,
-    level_value = results$level_value,
-    group = results$group,
-    value = sprintf("%d (%.1f%%)", results$count, results$percent),
-    p_value = results$p_value,
-    stringsAsFactors = FALSE
-  )
-
-  unique_levels <- unique(formatted$level_value)
-  wide_rows <- lapply(unique_levels, function(level_value) {
-    subset <- formatted[formatted$level_value == level_value, , drop = FALSE]
-    row <- as.list(subset$value)
-    names(row) <- subset$group
-    data.frame(
-      level_label = subset$level_label[1],
-      level_value = level_value,
-      p_value = subset$p_value[1],
-      row,
-      stringsAsFactors = FALSE,
-      check.names = FALSE
-    )
-  })
-  wide_table <- do.call(rbind, wide_rows)
-
-  out <- results
-  attr(out, "wide_table") <- wide_table
-  attr(out, "variable_label") <- variable_label
-  attr(out, "by_label") <- by_label
-  class(out) <- c("tabmult", "data.frame")
-  out
+  do.call(rbind, results)
 }
