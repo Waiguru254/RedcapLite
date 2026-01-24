@@ -79,16 +79,8 @@ readcapdata <- function(token, url,fields = NULL, events = NULL, forms = NULL, d
   library(dplyr)
   normalize_empty_to_na <- function(df) {
     dt <- data.table::as.data.table(df)
-    cols <- names(dt)[vapply(dt, is.character, logical(1))]
-    if (length(cols) > 0) {
-      for (col in cols) {
-        data.table::set(
-          dt,
-          j = col,
-          value = data.table::fifelse(dt[[col]] == "", NA_character_, dt[[col]])
-        )
-      }
-    }
+    cols <- names(dt)
+    dt[, (cols) := lapply(.SD, function(x) data.table::fifelse(x == "", NA, x)), .SDcols = cols]
     as.data.frame(dt)
   }
   ### checking the options
